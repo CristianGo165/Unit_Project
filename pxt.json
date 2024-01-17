@@ -2,7 +2,9 @@
     "name": "Unit Project",
     "description": "",
     "dependencies": {
-        "device": "*"
+        "device": "*",
+        "multiplayer": "*",
+        "animation": "*"
     },
     "files": [
         "main.blocks",
