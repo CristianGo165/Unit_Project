@@ -64,6 +64,27 @@ mp.onButtonEvent(mp.MultiplayerButton.Right, ControllerButtonEvent.Pressed, func
     true
     )
 })
+function sprintfunction2 (sprite: Sprite) {
+    if (sprintBar2.value > 0) {
+        sprintBar2.attachToSprite(sprite, 5, 0)
+        sprintBar2.setColor(4, 5)
+        statEffect2 = true
+    }
+}
+function sprintfunction (sprite: Sprite) {
+    if (sprintBar.value > 0) {
+        sprintBar.attachToSprite(sprite, 5, 0)
+        sprintBar.setColor(4, 5)
+        statEffect = true
+    }
+}
+function sprintfunction4 (sprite: Sprite) {
+    if (sprintBar4.value > 0) {
+        sprintBar4.attachToSprite(sprite, 5, 0)
+        sprintBar4.setColor(4, 5)
+        statEffect4 = true
+    }
+}
 mp.onButtonEvent(mp.MultiplayerButton.Down, ControllerButtonEvent.Pressed, function (player2) {
     animation.stopAnimation(animation.AnimationTypes.All, mp.getPlayerSprite(player2))
     animation.runImageAnimation(
@@ -123,10 +144,6 @@ mp.onButtonEvent(mp.MultiplayerButton.Down, ControllerButtonEvent.Pressed, funct
     200,
     true
     )
-})
-mp.onButtonEvent(mp.MultiplayerButton.B, ControllerButtonEvent.Released, function (player2) {
-    speed = 50
-    sprintbar.setColor(0, 0)
 })
 mp.onButtonEvent(mp.MultiplayerButton.Left, ControllerButtonEvent.Pressed, function (player2) {
     animation.stopAnimation(animation.AnimationTypes.All, mp.getPlayerSprite(player2))
@@ -188,6 +205,13 @@ mp.onButtonEvent(mp.MultiplayerButton.Left, ControllerButtonEvent.Pressed, funct
     true
     )
 })
+function sprintfunction3 (sprite: Sprite) {
+    if (sprintBar3.value > 0) {
+        sprintBar3.attachToSprite(sprite, 5, 0)
+        sprintBar3.setColor(4, 5)
+        statEffect3 = true
+    }
+}
 mp.onButtonEvent(mp.MultiplayerButton.Up, ControllerButtonEvent.Pressed, function (player2) {
     animation.stopAnimation(animation.AnimationTypes.All, mp.getPlayerSprite(player2))
     animation.runImageAnimation(
@@ -330,24 +354,35 @@ mp.onControllerEvent(ControllerEvent.Connected, function (player2) {
     currentPlayer = player2
     playerArray = mp.allPlayers()
 })
-function sprintBar (sprite: Sprite) {
-    if (sprintbar.value > 0) {
-        sprintbar.attachToSprite(sprite, 5, 0)
-        sprintbar.setColor(4, 0)
-        speed = 100
-    }
-}
 let playerArray: mp.Player[] = []
 let currentPlayer: mp.Player = null
 let playerSpriteList: Sprite[] = []
+let statEffect3 = false
+let statEffect4 = false
+let statEffect = false
+let statEffect2 = false
 let spriteIndex = 0
-let speed = 0
-let sprintbar: StatusBarSprite = null
+let sprintBar4: StatusBarSprite = null
+let sprintBar3: StatusBarSprite = null
+let sprintBar2: StatusBarSprite = null
+let sprintBar: StatusBarSprite = null
 game.splash("Town Game")
-sprintbar = statusbars.create(20, 4, StatusBarKind.stamina)
-sprintbar.value = 100
-sprintbar.setColor(0, 0)
-speed = 50
+sprintBar = statusbars.create(20, 4, StatusBarKind.stamina)
+sprintBar2 = statusbars.create(20, 4, StatusBarKind.stamina)
+sprintBar3 = statusbars.create(20, 4, StatusBarKind.stamina)
+sprintBar4 = statusbars.create(20, 4, StatusBarKind.stamina)
+sprintBar.value = 100
+sprintBar.setColor(0, 0)
+sprintBar2.value = 100
+sprintBar2.setColor(0, 0)
+sprintBar3.value = 100
+sprintBar3.setColor(0, 0)
+sprintBar4.value = 100
+sprintBar4.setColor(0, 0)
+let speed = 50
+let speed2 = 50
+let speed3 = 50
+let speed4 = 50
 scene.setBackgroundImage(img`
     ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
     ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -479,15 +514,85 @@ scene.setBackgroundColor(15)
 tiles.setCurrentTilemap(tilemap`Overworld`)
 forever(function () {
     mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.One), speed, speed)
-    if (mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.One), mp.MultiplayerButton.B) && sprintbar.value > 0) {
-        sprintBar(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)))
+    if (mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.One), mp.MultiplayerButton.B) && sprintBar.value > 0) {
+        sprintfunction(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)))
         pause(100)
-        sprintbar.value += -5
+        sprintBar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
+        sprintBar.value += -5
+        speed += 10
     } else {
         speed = 50
     }
-    if (!(mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.One), mp.MultiplayerButton.B)) && sprintbar.value < 100) {
+    if (!(mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.One), mp.MultiplayerButton.B)) && sprintBar.value < 100) {
         pause(300)
-        sprintbar.value += 10
+        sprintBar.value += 5
+    }
+    if (statEffect) {
+        if (sprintBar.value == 100) {
+            sprintBar.setColor(3, 5)
+        }
+    }
+})
+forever(function () {
+    mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.Two), speed2, speed2)
+    if (mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.Two), mp.MultiplayerButton.B) && sprintBar2.value > 0) {
+        sprintfunction2(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)))
+        pause(100)
+        sprintBar2.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
+        sprintBar2.value += -5
+        speed2 += 10
+    } else {
+        speed2 = 50
+    }
+    if (!(mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.Two), mp.MultiplayerButton.B)) && sprintBar2.value < 100) {
+        pause(300)
+        sprintBar2.value += 5
+        if (statEffect2) {
+            if (sprintBar2.value == 100) {
+                sprintBar2.setColor(3, 5)
+            }
+        }
+    }
+})
+forever(function () {
+    mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.Three), speed3, speed3)
+    if (mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.Three), mp.MultiplayerButton.B) && sprintBar3.value > 0) {
+        sprintfunction3(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Three)))
+        pause(100)
+        sprintBar3.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
+        sprintBar3.value += -5
+        speed3 += 10
+    } else {
+        speed3 = 50
+    }
+    if (!(mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.Three), mp.MultiplayerButton.B)) && sprintBar3.value < 100) {
+        pause(300)
+        sprintBar3.value += 5
+        if (statEffect3) {
+            if (sprintBar3.value == 100) {
+                sprintBar3.setColor(3, 5)
+            }
+        }
+    }
+})
+forever(function () {
+    mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.Four), speed4, speed4)
+    if (mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.Four), mp.MultiplayerButton.B) && sprintBar4.value > 0) {
+        sprintfunction4(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)))
+        pause(100)
+        sprintBar4.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
+        sprintBar4.value += -5
+        speed4 += 10
+    } else {
+        speed4 = 50
+    }
+    if (!(mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.Four), mp.MultiplayerButton.B)) && sprintBar4.value < 100) {
+        pause(300)
+        sprintBar4.value += 5
+        if (statEffect4) {
+            if (sprintBar4.value == 100) {
+                sprintBar4.setColor(3, 5)
+            }
+        }
     }
 })
