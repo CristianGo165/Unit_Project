@@ -2,19 +2,7 @@ namespace StatusBarKind {
     export const stamina = StatusBarKind.create()
 }
 mp.onButtonEvent(mp.MultiplayerButton.B, ControllerButtonEvent.Pressed, function (player2) {
-    sprintbar = statusbars.create(20, 4, StatusBarKind.stamina)
-    sprintbar.attachToSprite(mp.getPlayerSprite(player2), 5, 0)
-    sprintbar.setColor(4, 0)
-    while (sprintbar.value > 0) {
-        pause(50)
-        sprintbar.value += -4
-        speed = 100
-        mp.moveWithButtons(player2, speed, speed)
-    }
-    speed = 50
-    sprintbar.value = 0
-    mp.moveWithButtons(player2, speed, speed)
-    pause(2000)
+	
 })
 mp.onButtonEvent(mp.MultiplayerButton.Right, ControllerButtonEvent.Pressed, function (player2) {
     animation.stopAnimation(animation.AnimationTypes.All, mp.getPlayerSprite(player2))
@@ -138,8 +126,7 @@ mp.onButtonEvent(mp.MultiplayerButton.Down, ControllerButtonEvent.Pressed, funct
 })
 mp.onButtonEvent(mp.MultiplayerButton.B, ControllerButtonEvent.Released, function (player2) {
     speed = 50
-    sprintbar.value = 0
-    mp.moveWithButtons(player2, speed, speed)
+    sprintbar.setColor(0, 0)
 })
 mp.onButtonEvent(mp.MultiplayerButton.Left, ControllerButtonEvent.Pressed, function (player2) {
     animation.stopAnimation(animation.AnimationTypes.All, mp.getPlayerSprite(player2))
@@ -343,16 +330,24 @@ mp.onControllerEvent(ControllerEvent.Connected, function (player2) {
     currentPlayer = player2
     playerArray = mp.allPlayers()
 })
-function setPlayerMove () {
-	
+function sprintBar (sprite: Sprite) {
+    if (sprintbar.value > 0) {
+        sprintbar.attachToSprite(sprite, 5, 0)
+        sprintbar.setColor(4, 0)
+        speed = 100
+    }
 }
 let playerArray: mp.Player[] = []
 let currentPlayer: mp.Player = null
 let playerSpriteList: Sprite[] = []
+let spriteIndex = 0
 let speed = 0
 let sprintbar: StatusBarSprite = null
-let spriteIndex = 0
 game.splash("Town Game")
+sprintbar = statusbars.create(20, 4, StatusBarKind.stamina)
+sprintbar.value = 100
+sprintbar.setColor(0, 0)
+speed = 50
 scene.setBackgroundImage(img`
     ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
     ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -482,3 +477,17 @@ namespace userconfig {
 }
 scene.setBackgroundColor(15)
 tiles.setCurrentTilemap(tilemap`Overworld`)
+forever(function () {
+    mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.One), speed, speed)
+    if (mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.One), mp.MultiplayerButton.B) && sprintbar.value > 0) {
+        sprintBar(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)))
+        pause(100)
+        sprintbar.value += -5
+    } else {
+        speed = 50
+    }
+    if (!(mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.One), mp.MultiplayerButton.B)) && sprintbar.value < 100) {
+        pause(300)
+        sprintbar.value += 10
+    }
+})
