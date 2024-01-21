@@ -1,3 +1,7 @@
+namespace SpriteKind {
+    export const spawner = SpriteKind.create()
+    export const burner = SpriteKind.create()
+}
 namespace StatusBarKind {
     export const stamina = StatusBarKind.create()
 }
@@ -13,6 +17,23 @@ mp.onButtonEvent(mp.MultiplayerButton.Left, ControllerButtonEvent.Released, func
     }
     animationHandler(mp.getPlayerSprite(player2), false, currentPlayer, 2, animationSpeed)
 })
+function setUpEnemy (_type: number, posX: number, posY: number) {
+    if (_type == 0) {
+        enemySprite = sprites.create(assets.image`myImage0`, SpriteKind.Enemy)
+        sprites.setDataNumber(enemySprite, "health", 50)
+        sprites.setDataNumber(enemySprite, "speed", 100)
+        sprites.setDataNumber(enemySprite, "level", 5)
+    } else if (_type == 1) {
+        enemySprite = sprites.create(assets.image`myImage`, SpriteKind.Enemy)
+        sprites.setDataNumber(enemySprite, "health", 100)
+        sprites.setDataNumber(enemySprite, "speed", 10)
+    } else if (_type == 2) {
+        enemySprite = sprites.create(assets.image`Enemy3`, SpriteKind.Enemy)
+        sprites.setDataNumber(enemySprite, "health", 150)
+        sprites.setDataNumber(enemySprite, "speed", 15)
+    }
+    enemySprite.setPosition(posX, posY)
+}
 mp.onButtonEvent(mp.MultiplayerButton.Right, ControllerButtonEvent.Pressed, function (player2) {
     if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
         currentPlayer = 0
@@ -1003,6 +1024,11 @@ mp.onButtonEvent(mp.MultiplayerButton.Down, ControllerButtonEvent.Pressed, funct
     }
     animationHandler(mp.getPlayerSprite(player2), true, currentPlayer, 1, animationSpeed)
 })
+function spawnSpawners () {
+    for (let value of tiles.getTilesByType(assets.tile`spawnerGrassTile`)) {
+        setUpEnemySpawners(value.x, value.y)
+    }
+}
 mp.onButtonEvent(mp.MultiplayerButton.Left, ControllerButtonEvent.Pressed, function (player2) {
     if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
         currentPlayer = 0
@@ -1034,6 +1060,24 @@ mp.onButtonEvent(mp.MultiplayerButton.Down, ControllerButtonEvent.Released, func
     }
     animationHandler(mp.getPlayerSprite(player2), false, currentPlayer, 1, animationSpeed)
 })
+function setUpEnemySpawners (spawnerX: number, spawnerY: number) {
+    enemySpawnerSprite = sprites.create(assets.image`EnemyGrass4S`, SpriteKind.spawner)
+    enemySpawnerSprite.setPosition(spawnerX, spawnerY)
+    sprites.setDataNumber(enemySpawnerSprite, "radius", randint(0, 25))
+    sprites.setDataNumber(enemySpawnerSprite, "angle", randint(0, 360))
+    sprites.setDataNumber(enemySpawnerSprite, "spawnEnemyType", randint(0, 2))
+    for (let index = 0; index < 5; index++) {
+        sprites.setDataNumber(enemySpawnerSprite, "spriteX", enemySpawnerSprite.x + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.cos(sprites.readDataNumber(enemySpawnerSprite, "angle")))
+        sprites.setDataNumber(enemySpawnerSprite, "spriteY", enemySpawnerSprite.y + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.sin(sprites.readDataNumber(enemySpawnerSprite, "angle")))
+        burnerSprite.setPosition(sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
+        while (tiles.tileAtLocationIsWall(tiles.getTileLocation(burnerSprite.tilemapLocation().column, burnerSprite.tilemapLocation().row))) {
+            sprites.setDataNumber(enemySpawnerSprite, "spriteX", sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.cos(sprites.readDataNumber(enemySpawnerSprite, "angle")))
+            sprites.setDataNumber(enemySpawnerSprite, "spriteY", sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.asin(sprites.readDataNumber(enemySpawnerSprite, "angle")))
+            burnerSprite.setPosition(sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
+        }
+        setUpEnemy(sprites.readDataNumber(enemySpawnerSprite, "spawnEnemyType"), sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
+    }
+}
 mp.onButtonEvent(mp.MultiplayerButton.Up, ControllerButtonEvent.Pressed, function (player2) {
     if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
         currentPlayer = 0
@@ -1128,6 +1172,24 @@ mp.onControllerEvent(ControllerEvent.Connected, function (player2) {
     scene.cameraFollowSprite(mp.getPlayerSprite(player2))
 })
 function initializeVariables () {
+    burnerSprite = sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        `, SpriteKind.burner)
     currentPlayer = 0
     sprintBar = statusbars.create(20, 4, StatusBarKind.stamina)
     sprintBar2 = statusbars.create(20, 4, StatusBarKind.stamina)
@@ -1279,6 +1341,8 @@ let speed = 0
 let spriteIndex = 0
 let playerSpriteList: Sprite[] = []
 let playerArray: mp.Player[] = []
+let burnerSprite: Sprite = null
+let enemySpawnerSprite: Sprite = null
 let statEffect3 = false
 let sprintBar3: StatusBarSprite = null
 let statEffect4 = false
@@ -1288,6 +1352,7 @@ let statEffect = false
 let sprintBar: StatusBarSprite = null
 let statEffect2 = false
 let sprintBar2: StatusBarSprite = null
+let enemySprite: Sprite = null
 let animationSpeed = 0
 let currentPlayer = 0
 namespace userconfig {
@@ -1296,6 +1361,7 @@ namespace userconfig {
 }
 initializeVariables()
 animSetup()
+spawnSpawners()
 game.splash("Town Game")
 forever(function () {
     mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.One), speed, speed)
