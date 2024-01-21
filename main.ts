@@ -1489,18 +1489,6 @@ spawnSpawners()
 music.play(music.stringPlayable("C D E F G A B C5 ", 120), music.PlaybackMode.UntilDone)
 game.splash("Town Game")
 music.play(music.stringPlayable("E B C5 A B G A F ", 120), music.PlaybackMode.LoopingInBackground)
-game.onUpdateInterval(5000, function () {
-    for (let enemyFollow of sprites.allOfKind(SpriteKind.Enemy)) {
-        for (let playerFollow of sprites.allOfKind(SpriteKind.Player)) {
-            if (distance(playerFollow, enemyFollow) < enemySight) {
-                enemyFollow.follow(playerFollow, sprites.readDataNumber(enemyFollow, "speed"))
-                music.play(music.melodyPlayable(music.spooky), music.PlaybackMode.InBackground)
-            } else {
-                enemyFollow.setVelocity(randint(-1 * sprites.readDataNumber(enemyFollow, "speed"), sprites.readDataNumber(enemyFollow, "speed")), randint(-1 * sprites.readDataNumber(enemyFollow, "speed"), sprites.readDataNumber(enemyFollow, "speed")))
-            }
-        }
-    }
-})
 forever(function () {
     mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.One), speed, speed)
     if (mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.One), mp.MultiplayerButton.B) && sprintBar.value > 0) {
@@ -1589,6 +1577,18 @@ forever(function () {
         if (statEffect4) {
             if (sprintBar4.value == 100) {
                 sprintBar4.setColor(3, 5)
+            }
+        }
+    }
+})
+game.onUpdateInterval(100, function () {
+    for (let enemyFollow of sprites.allOfKind(SpriteKind.Enemy)) {
+        for (let playerFollow of sprites.allOfKind(SpriteKind.Player)) {
+            if (distance(playerFollow, enemyFollow) < enemySight) {
+                enemyFollow.follow(playerFollow, sprites.readDataNumber(enemyFollow, "speed"))
+                music.play(music.melodyPlayable(music.spooky), music.PlaybackMode.InBackground)
+            } else {
+                enemyFollow.setVelocity(randint(-1 * sprites.readDataNumber(enemyFollow, "speed"), sprites.readDataNumber(enemyFollow, "speed")), randint(-1 * sprites.readDataNumber(enemyFollow, "speed"), sprites.readDataNumber(enemyFollow, "speed")))
             }
         }
     }
