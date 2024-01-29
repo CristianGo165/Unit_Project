@@ -246,6 +246,63 @@ cddddddddd5555ccbbc.....
 5 . . . . . . . . . . . . . . 
 . . . . . . . . . . . . . . . 
 `;
+            case "image13":
+            case "myImage2":return img`
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+eeeeeeeeeeeeeeeeee5eeeeeeeeeeeeeeee
+e5ee5ee5eeeeeeeee55eeeeeeeeee5eeeee
+555e55555e55e55e5555e55555e555555e5
+55555555555555555555555555555555555
+55555555555555555555555555555555555
+5555555521ff1255555521ff12555555555
+5555555512ff2155555512ff21555555555
+5555555521ff1255555521ff12555555555
+55555555555555555555555555555555555
+5555555eeeeeeee55f5f555555555555555
+555555ebccccceee5555555555555555555
+55555ebccccccccbeee5555555555555555
+5555ebddcccccccccb1ee55555555555555
+5555ebcdcccccccccc11be5555555555555
+5555eccbcccccccccc11ccee55555e55555
+5555eccccccccccccc1bccb1e5555e55555
+5555ecccccccccccccccccb11eeeeb55555
+5555eeccccccccccccccccc1bcccce55555
+5555eeecccccccccccccccccccccce55555
+555555eeccccccb333cc333bccccee55555
+55555555edccc3333bc333333ccbee55555
+555555555eec33333b3333333cceee55555
+555555555ee33333b33333333ceeee55555
+555555555ee33333b3333333beeeee55555
+5555555555e33333b33b133beeeee555555
+5555555555e13333333b113eeeeee555555
+5555555555e13333333b11eeeeeee555555
+5555555555e33333333beeeeeeee5555555
+5555555555ee3133133eeeeeeee55555555
+55555555555ee13313eeeeeeee555555555
+5555555555555eeeeeeeeeee55555555555
+55555555555555eeeeeeee5555555555555
+`;
+            case "image14":
+            case "myImage3":return img`
+. . . . . f f f f f . . . 
+. . . f f f f f f f f f . 
+. . f f f c f f f f f f . 
+. . f f c f f f c f f f f 
+f f c c f f f c c f f c f 
+f f f f f c f f f f c c f 
+. f f f c c f f f f f f f 
+. . f f c c f 2 f c c f f 
+. . . f b b f 4 c b c f . 
+. . . f b b b b c f f f . 
+. . . f f c c c c c f . . 
+. . . f 2 2 2 c b b c . . 
+. . . f 2 2 2 c b b c . . 
+. . . f 4 4 4 f c c f . . 
+. . . . f f f f f f . . . 
+. . . . . . f f f . . . . 
+`;
         }
         return null;
     })

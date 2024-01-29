@@ -1,6 +1,10 @@
+enum RadioMessage {
+    message1 = 49434
+}
 namespace SpriteKind {
     export const spawner = SpriteKind.create()
     export const burner = SpriteKind.create()
+    export const Boss = SpriteKind.create()
 }
 namespace StatusBarKind {
     export const stamina = StatusBarKind.create()
@@ -62,6 +66,7 @@ function setUpCombatVars () {
     enemySight = 125
     meleeCooldown = 2500
     rangedCooldown = 1500
+    summonCondition = randint(100, 1000)
 }
 mp.onButtonEvent(mp.MultiplayerButton.Up, ControllerButtonEvent.Released, function (player2) {
     if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
@@ -108,6 +113,7 @@ mp.onButtonEvent(mp.MultiplayerButton.A, ControllerButtonEvent.Pressed, function
                 if (distance(mp.getPlayerSprite(player2), enemiesArray) < meleeHitRange) {
                     sprites.destroy(enemiesArray, effects.spray, 100)
                     mp.changePlayerStateBy(player2, MultiplayerState.score, 100 * mp.getPlayerState(player2, MultiplayerState.life))
+                    summonBoss()
                 }
             }
             sprites.setDataBoolean(mp.getPlayerSprite(player2), "canAttk", false)
@@ -1135,7 +1141,7 @@ function setUpSprintBar () {
     sprintBar3.setColor(0, 0)
     sprintBar4.value = 100
     sprintBar4.setColor(0, 0)
-    speed = 10
+    speed = 50
     animationSpeed = 100
     speed2 = 50
     speed3 = 50
@@ -1155,6 +1161,114 @@ function sprintfunction4 (sprite: Sprite) {
         sprintBar4.attachToSprite(sprite, 5, 0)
         sprintBar4.setColor(4, 5)
         statEffect4 = true
+    }
+}
+function summonBoss () {
+    scoreSum = 0
+    scoresLoopCounter = 0
+    for (let playerArrayLoopA of mp.allPlayers()) {
+        playerScores[scoresLoopCounter] = mp.getPlayerState(playerArrayLoopA, MultiplayerState.score)
+        scoresLoopCounter += 1
+    }
+    for (let scoresLoopB of playerScores) {
+        scoreSum += scoresLoopB
+    }
+    if (scoreSum >= summonCondition) {
+        summonCondition = 1e+57
+        sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
+        sprites.destroyAllSpritesOfKind(SpriteKind.spawner)
+        scene.cameraShake(6, 5000)
+        pause(2000)
+        Florczak = sprites.create(assets.image`myImage3`, SpriteKind.Player)
+        Florczak.setPosition(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x - 100, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y)
+        game.splash("Broken one, soul so unruly...")
+        mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.One), 0, 0)
+        pause(2000)
+        animation.runImageAnimation(
+        mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)),
+        [img`
+            . . . . . f f f f f . . . 
+            . . . f f f f f f f f f . 
+            . . f f f c f f f f f f . 
+            . . f f c f f f c f f f f 
+            f f c c f f f c c f f c f 
+            f f f f f e f f f f c c f 
+            . f f f e e f f f f f f f 
+            . . f f e e f b f e e f f 
+            . . . f 4 4 f 1 e 4 e f . 
+            . . . f 4 4 4 4 e f f f . 
+            . . . f f e e e e e f . . 
+            . . . f 7 7 7 e 4 4 e . . 
+            . . . f 7 7 7 e 4 4 e . . 
+            . . . f 6 6 6 f e e f . . 
+            . . . . f f f f f f . . . 
+            . . . . . . f f f . . . . 
+            `],
+        500,
+        false
+        )
+        game.splash("To what lows hath thou spelunked?")
+        while (Florczak.x < mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x - 15) {
+            animation.runImageAnimation(
+            Florczak,
+            [img`
+                . . . . . . . . . . . . . 
+                . . . f f f f f f . . . . 
+                . f f f f f f f f f . . . 
+                . f f f f f f c f f f . . 
+                f f f f c f f f c f f f . 
+                f c f f c c f f f c c f f 
+                f c c f f f f c f f f f f 
+                f f f f f f f c c f f f . 
+                f f c c f 2 f c c f f f . 
+                f f c b c 4 f b b f f . . 
+                . f f f c b b b b f . . . 
+                . b b b c c c c f f . . . 
+                . c b b c 2 2 2 2 f . . . 
+                . f c c f 4 4 4 4 f f . . 
+                . f f f f f f f f f f . . 
+                . . f f . . . f f f . . . 
+                `,img`
+                . . . . . . . . . . . . . 
+                . . . f f f f f f . . . . 
+                . f f f f f f f f f . . . 
+                . f f f f f f c f f f . . 
+                f f f f c f f f c f f f . 
+                f c f f c c f f f c c f f 
+                f c c f f f f c f f f f f 
+                f f f f f f f c c f f f . 
+                f f c c f 2 f c c f f . . 
+                . f c b c 4 f b b f f . . 
+                . f f f c c b b b f . . . 
+                . . f c b b c c f f . . . 
+                . . f c b b c 2 2 f . . . 
+                . f f f c c f 4 4 f f . . 
+                . f f f f f f f f f f . . 
+                . . f f . . . f f f . . . 
+                `,img`
+                . . . f f f f f . . . . . 
+                . f f f f f f f f f . . . 
+                . f f f f f f c f f f . . 
+                f f f f c f f f c f f . . 
+                f c f f c c f f f c c f f 
+                f c c f f f f c f f f f f 
+                f f f f f f f c c f f f . 
+                f f c c f 2 f c c f f . . 
+                . f c b c 4 f b b f . . . 
+                . f f f c b b b b f . . . 
+                . . f c c c c c f f . . . 
+                . . c b b c 2 2 2 f . . . 
+                . . c b b c 2 2 2 f . . . 
+                . . f c c f 4 4 4 f . . . 
+                . . . f f f f f f . . . . 
+                . . . . f f f . . . . . . 
+                `],
+            200,
+            false
+            )
+            pause(100)
+            Florczak.x += 10
+        }
     }
 }
 mp.onButtonEvent(mp.MultiplayerButton.Down, ControllerButtonEvent.Pressed, function (player2) {
@@ -1452,6 +1566,9 @@ let playerArray: mp.Player[] = []
 let burnerSprite: Sprite = null
 let enemySpawnerSprite: Sprite = null
 let statEffect3 = false
+let Florczak: Sprite = null
+let scoresLoopCounter = 0
+let scoreSum = 0
 let statEffect4 = false
 let speed4 = 0
 let speed3 = 0
@@ -1466,6 +1583,7 @@ let playerSpriteList: Sprite[] = []
 let statEffect2 = false
 let sprintBar2: StatusBarSprite = null
 let projectile: Sprite = null
+let summonCondition = 0
 let rangedCooldown = 0
 let meleeCooldown = 0
 let enemySight = 0
@@ -1475,6 +1593,7 @@ let canHurtPlayers = false
 let enemySprite: Sprite = null
 let animationSpeed = 0
 let currentPlayer = 0
+let playerScores: number[] = []
 initializeVariables()
 scene.centerCameraAt(250, 825)
 initializeSpritesList()
@@ -1489,6 +1608,12 @@ spawnSpawners()
 music.play(music.stringPlayable("C D E F G A B C5 ", 120), music.PlaybackMode.UntilDone)
 game.splash("Town Game")
 music.play(music.stringPlayable("E B C5 A B G A F ", 120), music.PlaybackMode.LoopingInBackground)
+playerScores = [
+0,
+0,
+0,
+0
+]
 forever(function () {
     mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.One), speed, speed)
     if (mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.One), mp.MultiplayerButton.B) && sprintBar.value > 0) {
