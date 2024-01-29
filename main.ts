@@ -1252,6 +1252,115 @@ function sprintfunction4 (sprite: Sprite) {
         statEffect4 = true
     }
 }
+function summonBoss () {
+    let playerScores: number[] = []
+    scoreSum = 0
+    scoresLoopCounter = 0
+    for (let playerArrayLoopA of mp.allPlayers()) {
+        playerScores[scoresLoopCounter] = mp.getPlayerState(playerArrayLoopA, MultiplayerState.score)
+        scoresLoopCounter += 1
+    }
+    for (let scoresLoopB of playerScores) {
+        scoreSum += scoresLoopB
+    }
+    if (scoreSum >= summonCondition) {
+        summonCondition = 1e+57
+        sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
+        sprites.destroyAllSpritesOfKind(SpriteKind.spawner)
+        scene.cameraShake(6, 5000)
+        pause(2000)
+        Florczak = sprites.create(assets.image`myImage3`, SpriteKind.Player)
+        Florczak.setPosition(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x - 100, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y)
+        game.splash("Broken one, soul so unruly...")
+        mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.One), 0, 0)
+        pause(2000)
+        animation.runImageAnimation(
+        mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)),
+        [img`
+            . . . . . f f f f f . . . 
+            . . . f f f f f f f f f . 
+            . . f f f c f f f f f f . 
+            . . f f c f f f c f f f f 
+            f f c c f f f c c f f c f 
+            f f f f f e f f f f c c f 
+            . f f f e e f f f f f f f 
+            . . f f e e f b f e e f f 
+            . . . f 4 4 f 1 e 4 e f . 
+            . . . f 4 4 4 4 e f f f . 
+            . . . f f e e e e e f . . 
+            . . . f 7 7 7 e 4 4 e . . 
+            . . . f 7 7 7 e 4 4 e . . 
+            . . . f 6 6 6 f e e f . . 
+            . . . . f f f f f f . . . 
+            . . . . . . f f f . . . . 
+            `],
+        500,
+        false
+        )
+        game.splash("To what lows hath thou spelunked?")
+        while (Florczak.x < mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x - 15) {
+            animation.runImageAnimation(
+            Florczak,
+            [img`
+                . . . . . . . . . . . . . 
+                . . . f f f f f f . . . . 
+                . f f f f f f f f f . . . 
+                . f f f f f f c f f f . . 
+                f f f f c f f f c f f f . 
+                f c f f c c f f f c c f f 
+                f c c f f f f c f f f f f 
+                f f f f f f f c c f f f . 
+                f f c c f 2 f c c f f f . 
+                f f c b c 4 f b b f f . . 
+                . f f f c b b b b f . . . 
+                . b b b c c c c f f . . . 
+                . c b b c 2 2 2 2 f . . . 
+                . f c c f 4 4 4 4 f f . . 
+                . f f f f f f f f f f . . 
+                . . f f . . . f f f . . . 
+                `,img`
+                . . . . . . . . . . . . . 
+                . . . f f f f f f . . . . 
+                . f f f f f f f f f . . . 
+                . f f f f f f c f f f . . 
+                f f f f c f f f c f f f . 
+                f c f f c c f f f c c f f 
+                f c c f f f f c f f f f f 
+                f f f f f f f c c f f f . 
+                f f c c f 2 f c c f f . . 
+                . f c b c 4 f b b f f . . 
+                . f f f c c b b b f . . . 
+                . . f c b b c c f f . . . 
+                . . f c b b c 2 2 f . . . 
+                . f f f c c f 4 4 f f . . 
+                . f f f f f f f f f f . . 
+                . . f f . . . f f f . . . 
+                `,img`
+                . . . f f f f f . . . . . 
+                . f f f f f f f f f . . . 
+                . f f f f f f c f f f . . 
+                f f f f c f f f c f f . . 
+                f c f f c c f f f c c f f 
+                f c c f f f f c f f f f f 
+                f f f f f f f c c f f f . 
+                f f c c f 2 f c c f f . . 
+                . f c b c 4 f b b f . . . 
+                . f f f c b b b b f . . . 
+                . . f c c c c c f f . . . 
+                . . c b b c 2 2 2 f . . . 
+                . . c b b c 2 2 2 f . . . 
+                . . f c c f 4 4 4 f . . . 
+                . . . f f f f f f . . . . 
+                . . . . f f f . . . . . . 
+                `],
+            200,
+            false
+            )
+            pause(100)
+            Florczak.x += 10
+        }
+    }
+}
 mp.onLifeZero(function (player2) {
     sprites.destroy(mp.getPlayerSprite(player2), effects.rings, 1000)
     music.play(music.melodyPlayable(music.wawawawaa), music.PlaybackMode.InBackground)
@@ -1535,6 +1644,10 @@ let enemySpawnerSprite: Sprite = null
 let myObject = 0
 let statEffect3 = false
 let itemSprite: Sprite = null
+let Florczak: Sprite = null
+let summonCondition = 0
+let scoresLoopCounter = 0
+let scoreSum = 0
 let statEffect4 = false
 let speed4 = 0
 let speed3 = 0
