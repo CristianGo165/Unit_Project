@@ -39,6 +39,11 @@ function setUpEnemy (_type: number, posX: number, posY: number) {
     }
     enemySprite.setPosition(posX, posY)
 }
+function spawnItemSpawners () {
+    for (let itemSpawnerLocations of tiles.getTilesByType(assets.tile`myTile26`)) {
+        setUpPowerUpSpawners(itemSpawnerLocations.x, itemSpawnerLocations.y, randint(2, 4))
+    }
+}
 mp.onButtonEvent(mp.MultiplayerButton.Right, ControllerButtonEvent.Pressed, function (player2) {
     if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
         currentPlayer = 0
@@ -122,6 +127,26 @@ function sprintfunction2 (sprite: Sprite) {
         sprintBar2.attachToSprite(sprite, 5, 0)
         sprintBar2.setColor(4, 5)
         statEffect2 = true
+    }
+}
+function setUpPowerUpSpawners (spawnerX: number, spawnerY: number, numOfPowerups: number) {
+    spawnerSprite = sprites.create(assets.image`EnemyGrass4S`, SpriteKind.spawner)
+    spawnerSprite.setPosition(spawnerX, spawnerY)
+    for (let index = 0; index < numOfPowerups; index++) {
+        sprites.setDataNumber(spawnerSprite, "radius", randint(25, 50))
+        sprites.setDataNumber(spawnerSprite, "angle", randint(0, 360))
+        sprites.setDataNumber(spawnerSprite, "spawnItemType", randint(0, 2))
+        sprites.setDataNumber(spawnerSprite, "spriteX", spawnerSprite.x + sprites.readDataNumber(spawnerSprite, "radius") * Math.cos(sprites.readDataNumber(spawnerSprite, "angle")))
+        sprites.setDataNumber(spawnerSprite, "spriteY", spawnerSprite.y + sprites.readDataNumber(spawnerSprite, "radius") * Math.sin(sprites.readDataNumber(spawnerSprite, "angle")))
+        burnerSprite.setPosition(sprites.readDataNumber(spawnerSprite, "spriteX"), sprites.readDataNumber(spawnerSprite, "spriteY"))
+        while (tiles.tileAtLocationIsWall(tiles.getTileLocation(burnerSprite.tilemapLocation().column, burnerSprite.tilemapLocation().row))) {
+            sprites.setDataNumber(spawnerSprite, "radius", randint(25, 50))
+            sprites.setDataNumber(spawnerSprite, "angle", randint(0, 360))
+            sprites.setDataNumber(spawnerSprite, "spriteX", spawnerSprite.x + sprites.readDataNumber(spawnerSprite, "radius") * Math.cos(sprites.readDataNumber(spawnerSprite, "angle")))
+            sprites.setDataNumber(spawnerSprite, "spriteY", spawnerSprite.y + sprites.readDataNumber(spawnerSprite, "radius") * Math.sin(sprites.readDataNumber(spawnerSprite, "angle")))
+            burnerSprite.setPosition(sprites.readDataNumber(spawnerSprite, "spriteX"), sprites.readDataNumber(spawnerSprite, "spriteY"))
+        }
+        setUpPowerups(sprites.readDataNumber(spawnerSprite, "spawnItemType"), sprites.readDataNumber(spawnerSprite, "spriteX"), sprites.readDataNumber(spawnerSprite, "spriteY"))
     }
 }
 function initializeSpritesList () {
@@ -1143,12 +1168,14 @@ function setUpSprintBar () {
 }
 function animationHandler (animOn: Sprite, animate: boolean, playerNum: number, dir: number, animSpeed: number) {
     animation.stopAnimation(animation.AnimationTypes.MovementAnimation, animOn)
-    animation.runImageAnimation(
-    animOn,
-    animList[playerNum][dir],
-    animSpeed,
-    animate
-    )
+    if (animate) {
+        animation.runImageAnimation(
+        animOn,
+        animList[playerNum][dir],
+        animSpeed,
+        animate
+        )
+    }
 }
 function sprintfunction4 (sprite: Sprite) {
     if (sprintBar4.value > 0) {
@@ -1197,6 +1224,19 @@ mp.onButtonEvent(mp.MultiplayerButton.Left, ControllerButtonEvent.Pressed, funct
     }
     animationHandler(mp.getPlayerSprite(player2), true, currentPlayer, 2, animationSpeed)
 })
+function setUpPowerups (_type: number, posX: number, posY: number) {
+    if (_type == 0) {
+        itemSprite = sprites.create(assets.image`myImage2`, SpriteKind.Food)
+        sprites.setDataNumber(itemSprite, "healthUp", 1)
+    } else if (_type == 1) {
+        enemySprite = sprites.create(assets.image`myImage4`, SpriteKind.Food)
+        sprites.setDataNumber(itemSprite, "healthUp", 2)
+    } else if (_type == 2) {
+        itemSprite = sprites.create(assets.image`myImage3`, SpriteKind.Food)
+        sprites.setDataNumber(itemSprite, "healthUp", 3)
+    }
+    itemSprite.setPosition(posX, posY)
+}
 function sprintfunction3 (sprite: Sprite) {
     if (sprintBar3.value > 0) {
         sprintBar3.attachToSprite(sprite, 5, 0)
@@ -1204,6 +1244,12 @@ function sprintfunction3 (sprite: Sprite) {
         statEffect3 = true
     }
 }
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Food, function (sprite, otherSprite) {
+    sprites.destroy(otherSprite, effects.hearts, 200)
+    myObject += 1
+    mp.changePlayerStateBy(mp.getPlayerBySprite(sprite), MultiplayerState.life, sprites.readDataNumber(otherSprite, "healthUp"))
+    music.play(music.melodyPlayable(music.smallCrash), music.PlaybackMode.InBackground)
+})
 mp.onLifeZero(function (player2) {
     sprites.destroy(mp.getPlayerSprite(player2), effects.rings, 1000)
     music.play(music.melodyPlayable(music.wawawawaa), music.PlaybackMode.InBackground)
@@ -1223,16 +1269,18 @@ mp.onButtonEvent(mp.MultiplayerButton.Down, ControllerButtonEvent.Released, func
 function setUpEnemySpawners (spawnerX: number, spawnerY: number, numOfEnemies: number) {
     enemySpawnerSprite = sprites.create(assets.image`EnemyGrass4S`, SpriteKind.spawner)
     enemySpawnerSprite.setPosition(spawnerX, spawnerY)
-    sprites.setDataNumber(enemySpawnerSprite, "radius", randint(0, 25))
-    sprites.setDataNumber(enemySpawnerSprite, "angle", randint(0, 360))
-    sprites.setDataNumber(enemySpawnerSprite, "spawnEnemyType", randint(0, 2))
     for (let index = 0; index < numOfEnemies; index++) {
+        sprites.setDataNumber(enemySpawnerSprite, "radius", randint(0, 25))
+        sprites.setDataNumber(enemySpawnerSprite, "angle", randint(0, 360))
+        sprites.setDataNumber(enemySpawnerSprite, "spawnEnemyType", randint(0, 2))
         sprites.setDataNumber(enemySpawnerSprite, "spriteX", enemySpawnerSprite.x + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.cos(sprites.readDataNumber(enemySpawnerSprite, "angle")))
         sprites.setDataNumber(enemySpawnerSprite, "spriteY", enemySpawnerSprite.y + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.sin(sprites.readDataNumber(enemySpawnerSprite, "angle")))
         burnerSprite.setPosition(sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
         while (tiles.tileAtLocationIsWall(tiles.getTileLocation(burnerSprite.tilemapLocation().column, burnerSprite.tilemapLocation().row))) {
-            sprites.setDataNumber(enemySpawnerSprite, "spriteX", sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.cos(sprites.readDataNumber(enemySpawnerSprite, "angle")))
-            sprites.setDataNumber(enemySpawnerSprite, "spriteY", sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.asin(sprites.readDataNumber(enemySpawnerSprite, "angle")))
+            sprites.setDataNumber(enemySpawnerSprite, "radius", randint(0, 25))
+            sprites.setDataNumber(enemySpawnerSprite, "angle", randint(0, 360))
+            sprites.setDataNumber(enemySpawnerSprite, "spriteX", enemySpawnerSprite.x + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.cos(sprites.readDataNumber(enemySpawnerSprite, "angle")))
+            sprites.setDataNumber(enemySpawnerSprite, "spriteY", enemySpawnerSprite.y + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.sin(sprites.readDataNumber(enemySpawnerSprite, "angle")))
             burnerSprite.setPosition(sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
         }
         setUpEnemy(sprites.readDataNumber(enemySpawnerSprite, "spawnEnemyType"), sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
@@ -1449,9 +1497,10 @@ let playerFollow = 0
 let startFollow = false
 let spriteIndex = 0
 let playerArray: mp.Player[] = []
-let burnerSprite: Sprite = null
 let enemySpawnerSprite: Sprite = null
+let myObject = 0
 let statEffect3 = false
+let itemSprite: Sprite = null
 let statEffect4 = false
 let speed4 = 0
 let speed3 = 0
@@ -1463,6 +1512,8 @@ let animList: Image[][][] = []
 let statEffect = false
 let sprintBar: StatusBarSprite = null
 let playerSpriteList: Sprite[] = []
+let burnerSprite: Sprite = null
+let spawnerSprite: Sprite = null
 let statEffect2 = false
 let sprintBar2: StatusBarSprite = null
 let projectile: Sprite = null
@@ -1486,6 +1537,7 @@ setUpCombatVars()
 animSetup()
 setUpSprintBar()
 spawnSpawners()
+spawnItemSpawners()
 music.play(music.stringPlayable("C D E F G A B C5 ", 120), music.PlaybackMode.UntilDone)
 game.splash("Town Game")
 music.play(music.stringPlayable("E B C5 A B G A F ", 120), music.PlaybackMode.LoopingInBackground)
