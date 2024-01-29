@@ -1,15 +1,11 @@
-enum RadioMessage {
-    message1 = 49434
-}
 namespace SpriteKind {
     export const spawner = SpriteKind.create()
     export const burner = SpriteKind.create()
-    export const Boss = SpriteKind.create()
 }
 namespace StatusBarKind {
     export const stamina = StatusBarKind.create()
 }
-mp.onButtonEvent(mp.MultiplayerButton.Left, ControllerButtonEvent.Released, function (player2) {
+mp.onButtonEvent(mp.MultiplayerButton.Right, ControllerButtonEvent.Released, function (player2) {
     if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
         currentPlayer = 0
     } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
@@ -19,10 +15,7 @@ mp.onButtonEvent(mp.MultiplayerButton.Left, ControllerButtonEvent.Released, func
     } else {
         currentPlayer = 3
     }
-    animationHandler(mp.getPlayerSprite(player2), false, currentPlayer, 2, animationSpeed)
-})
-mp.onButtonEvent(mp.MultiplayerButton.B, ControllerButtonEvent.Pressed, function (player2) {
-    music.play(music.melodyPlayable(music.footstep), music.PlaybackMode.InBackground)
+    animationHandler(mp.getPlayerSprite(player2), false, currentPlayer, 3, animationSpeed)
 })
 function setUpEnemy (_type: number, posX: number, posY: number) {
     if (_type == 0) {
@@ -43,21 +36,41 @@ function setUpEnemy (_type: number, posX: number, posY: number) {
     }
     enemySprite.setPosition(posX, posY)
 }
-mp.onButtonEvent(mp.MultiplayerButton.Right, ControllerButtonEvent.Pressed, function (player2) {
+mp.onButtonEvent(mp.MultiplayerButton.Left, ControllerButtonEvent.Released, function (player2) {
     if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
         currentPlayer = 0
     } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
         currentPlayer = 1
-        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirX", 1)
-        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirY", 0)
     } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
         currentPlayer = 2
     } else {
         currentPlayer = 3
-        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)), "projDirX", 1)
-        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)), "projDirY", 0)
     }
-    animationHandler(mp.getPlayerSprite(player2), true, currentPlayer, 3, animationSpeed)
+    animationHandler(mp.getPlayerSprite(player2), false, currentPlayer, 2, animationSpeed)
+})
+function spawnItemSpawners () {
+    for (let itemSpawnerLocations of tiles.getTilesByType(assets.tile`myTile26`)) {
+        setUpPowerUpSpawners(itemSpawnerLocations.x, itemSpawnerLocations.y, randint(2, 4))
+    }
+}
+mp.onControllerEvent(ControllerEvent.Connected, function (player2) {
+    music.play(music.melodyPlayable(music.baDing), music.PlaybackMode.InBackground)
+    playerArray = mp.allPlayers()
+    mp.setPlayerSprite(player2, playerSpriteList[spriteIndex])
+    spriteIndex += 1
+    mp.setPlayerState(player2, MultiplayerState.life, 3)
+    mp.setPlayerState(mp.playerSelector(mp.PlayerNumber.One), MultiplayerState.score, 0)
+    if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
+        mp.getPlayerSprite(player2).setPosition(250, 825)
+        scene.cameraFollowSprite(mp.getPlayerSprite(player2))
+    } else {
+        mp.getPlayerSprite(player2).setPosition(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y)
+        mp.getPlayerSprite(player2).setStayInScreen(true)
+    }
+    sprites.setDataBoolean(mp.getPlayerSprite(player2), "canAttk", true)
+    sprites.setDataNumber(mp.getPlayerSprite(player2), "projDirX", 1)
+    sprites.setDataNumber(mp.getPlayerSprite(player2), "projDirY", 1)
+    startFollow = true
 })
 function setUpCombatVars () {
     canHurtPlayers = true
@@ -66,32 +79,7 @@ function setUpCombatVars () {
     enemySight = 125
     meleeCooldown = 2500
     rangedCooldown = 1500
-    summonCondition = randint(100, 1000)
 }
-mp.onButtonEvent(mp.MultiplayerButton.Up, ControllerButtonEvent.Released, function (player2) {
-    if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
-        currentPlayer = 0
-    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
-        currentPlayer = 1
-    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
-        currentPlayer = 2
-    } else {
-        currentPlayer = 3
-    }
-    animationHandler(mp.getPlayerSprite(player2), false, currentPlayer, 0, animationSpeed)
-})
-mp.onButtonEvent(mp.MultiplayerButton.Right, ControllerButtonEvent.Released, function (player2) {
-    if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
-        currentPlayer = 0
-    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
-        currentPlayer = 1
-    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
-        currentPlayer = 2
-    } else {
-        currentPlayer = 3
-    }
-    animationHandler(mp.getPlayerSprite(player2), false, currentPlayer, 3, animationSpeed)
-})
 mp.onButtonEvent(mp.MultiplayerButton.A, ControllerButtonEvent.Pressed, function (player2) {
     if (player2 == mp.playerSelector(mp.PlayerNumber.Two) || player2 == mp.playerSelector(mp.PlayerNumber.Four)) {
         if (sprites.readDataBoolean(mp.getPlayerSprite(player2), "canAttk")) {
@@ -113,7 +101,6 @@ mp.onButtonEvent(mp.MultiplayerButton.A, ControllerButtonEvent.Pressed, function
                 if (distance(mp.getPlayerSprite(player2), enemiesArray) < meleeHitRange) {
                     sprites.destroy(enemiesArray, effects.spray, 100)
                     mp.changePlayerStateBy(player2, MultiplayerState.score, 100 * mp.getPlayerState(player2, MultiplayerState.life))
-                    summonBoss()
                 }
             }
             sprites.setDataBoolean(mp.getPlayerSprite(player2), "canAttk", false)
@@ -130,6 +117,38 @@ function sprintfunction2 (sprite: Sprite) {
         statEffect2 = true
     }
 }
+function setUpPowerUpSpawners (spawnerX: number, spawnerY: number, numOfPowerups: number) {
+    spawnerSprite = sprites.create(assets.image`EnemyGrass4S`, SpriteKind.spawner)
+    spawnerSprite.setPosition(spawnerX, spawnerY)
+    for (let index = 0; index < numOfPowerups; index++) {
+        sprites.setDataNumber(spawnerSprite, "radius", randint(25, 50))
+        sprites.setDataNumber(spawnerSprite, "angle", randint(0, 360))
+        sprites.setDataNumber(spawnerSprite, "spawnItemType", randint(0, 2))
+        sprites.setDataNumber(spawnerSprite, "spriteX", spawnerSprite.x + sprites.readDataNumber(spawnerSprite, "radius") * Math.cos(sprites.readDataNumber(spawnerSprite, "angle")))
+        sprites.setDataNumber(spawnerSprite, "spriteY", spawnerSprite.y + sprites.readDataNumber(spawnerSprite, "radius") * Math.sin(sprites.readDataNumber(spawnerSprite, "angle")))
+        burnerSprite.setPosition(sprites.readDataNumber(spawnerSprite, "spriteX"), sprites.readDataNumber(spawnerSprite, "spriteY"))
+        while (tiles.tileAtLocationIsWall(tiles.getTileLocation(burnerSprite.tilemapLocation().column, burnerSprite.tilemapLocation().row))) {
+            sprites.setDataNumber(spawnerSprite, "radius", randint(25, 50))
+            sprites.setDataNumber(spawnerSprite, "angle", randint(0, 360))
+            sprites.setDataNumber(spawnerSprite, "spriteX", spawnerSprite.x + sprites.readDataNumber(spawnerSprite, "radius") * Math.cos(sprites.readDataNumber(spawnerSprite, "angle")))
+            sprites.setDataNumber(spawnerSprite, "spriteY", spawnerSprite.y + sprites.readDataNumber(spawnerSprite, "radius") * Math.sin(sprites.readDataNumber(spawnerSprite, "angle")))
+            burnerSprite.setPosition(sprites.readDataNumber(spawnerSprite, "spriteX"), sprites.readDataNumber(spawnerSprite, "spriteY"))
+        }
+        setUpPowerups(sprites.readDataNumber(spawnerSprite, "spawnItemType"), sprites.readDataNumber(spawnerSprite, "spriteX"), sprites.readDataNumber(spawnerSprite, "spriteY"))
+    }
+}
+mp.onButtonEvent(mp.MultiplayerButton.Down, ControllerButtonEvent.Released, function (player2) {
+    if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
+        currentPlayer = 0
+    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
+        currentPlayer = 1
+    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
+        currentPlayer = 2
+    } else {
+        currentPlayer = 3
+    }
+    animationHandler(mp.getPlayerSprite(player2), false, currentPlayer, 1, animationSpeed)
+})
 function initializeSpritesList () {
     playerSpriteList = [
     sprites.create(img`
@@ -236,7 +255,7 @@ function animSetup () {
         e e f 6 6 6 6 6 6 f e e . 
         . . . f f f f f f . . . . 
         . . . f f . . f f . . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . 
         . . . . . f f f f . . . . 
         . . . f f c c c c f f . . 
@@ -253,7 +272,7 @@ function animSetup () {
         . . 4 c 7 7 7 7 7 e 4 4 e 
         . . e f f f f f f f e e . 
         . . . f f f . . . . . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . 
         . . . . . f f f f . . . . 
         . . . f f c c c c f f . . 
@@ -288,7 +307,7 @@ function animSetup () {
         e e f 6 6 6 6 6 6 f e e . 
         . . . f f f f f f . . . . 
         . . . f f . . f f . . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . 
         . . . . . f f f f . . . . 
         . . . f f f f f f f f . . 
@@ -305,7 +324,7 @@ function animSetup () {
         . . . f 6 6 6 6 6 e e . . 
         . . . f f f f f f f . . . 
         . . . f f f . . . . . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . 
         . . . . f f f f . . . . . 
         . . f f f f f f f f . . . 
@@ -340,7 +359,7 @@ function animSetup () {
         . . . f 6 6 6 f e e f . . 
         . . . . f f f f f f . . . 
         . . . . . . f f f . . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . 
         . . . . f f f f f f . . . 
         . . . f f f f f f f f f . 
@@ -357,7 +376,7 @@ function animSetup () {
         . . f f 6 6 f e e f f f . 
         . . f f f f f f f f f f . 
         . . . f f f . . . f f . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . 
         . . . . f f f f f f . . . 
         . . . f f f f f f f f f . 
@@ -392,7 +411,7 @@ function animSetup () {
         . f e e f 6 6 6 6 f f . . 
         . f f f f f f f f f f . . 
         . . f f . . . f f f . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . 
         . . . f f f f f f . . . . 
         . f f f f f f f f f . . . 
@@ -409,7 +428,7 @@ function animSetup () {
         . f f f e e f 6 6 f f . . 
         . f f f f f f f f f f . . 
         . . f f . . . f f f . . . 
-        `,img`
+        `, img`
         . . . f f f f f . . . . . 
         . f f f f f f f f f . . . 
         . f f f f f f c f f f . . 
@@ -446,7 +465,7 @@ function animSetup () {
         . 4 4 f 6 6 6 6 6 6 f 4 4 . 
         . . . . f f f f f f . . . . 
         . . . . f f . . f f . . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . . 
         . f f f . f f f f . f f f . 
         f f f f f c c c c f f f f f 
@@ -463,7 +482,7 @@ function animSetup () {
         . . 4 f 3 3 3 3 3 e d d 4 . 
         . . e f f f f f f e e 4 . . 
         . . . f f f . . . . . . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . . 
         . f f f . f f f f . f f f . 
         f f f f f c c c c f f f f f 
@@ -498,7 +517,7 @@ function animSetup () {
         . 4 4 f 6 6 6 6 6 6 f 4 4 . 
         . . . . f f f f f f . . . . 
         . . . . f f . . f f . . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . . 
         . f f f . f f f f . f f f . 
         f f f f f c c c c f f f f f 
@@ -515,7 +534,7 @@ function animSetup () {
         . . . f 6 6 6 6 f e e . . . 
         . . . f f f f f f f . . . . 
         . . . f f f . . . . . . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . . 
         . f f f . f f f f . f f f . 
         f f f f f c c c c f f f f f 
@@ -550,7 +569,7 @@ function animSetup () {
         . . . f 6 6 6 f e e f . . . 
         . . . . f f f f f f . . . . 
         . . . . . . f f f . . . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . . 
         . . . . f f f f f . f f f . 
         . . . f f c c c c f f f f f 
@@ -567,7 +586,7 @@ function animSetup () {
         . . f f 6 6 f e e f f f . . 
         . . f f f f f f f f f f . . 
         . . . f f f . . . f f . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . . 
         . . . . f f f f f . f f f . 
         . . . f f c c c c f f f f f 
@@ -602,7 +621,7 @@ function animSetup () {
         . . f e e f 6 6 6 6 f f . . 
         . . f f f f f f f f f f . . 
         . . . f f . . . f f f . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . . . 
         . f f f . f f f f f . . . . 
         f f f f f c c c c f f . . . 
@@ -619,7 +638,7 @@ function animSetup () {
         . . f f f e e f 6 6 f f . . 
         . . f f f f f f f f f f . . 
         . . . f f . . . f f f . . . 
-        `,img`
+        `, img`
         . f f f . f f f f f . . . . 
         f f f f f c c c c f f . . . 
         f f f f b c c c c c c f . . 
@@ -656,7 +675,7 @@ function animSetup () {
         4 4 f 6 6 6 6 6 6 f 4 4 
         . . . f f f f f f . . . 
         . . . f f . . f f . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . 
         . . . . f f f f . . . . 
         . . f f e e e e f f . . 
@@ -673,7 +692,7 @@ function animSetup () {
         . 4 f d d d d d e d d 4 
         . e f f f f f f e e 4 . 
         . . f f f . . . . . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . 
         . . . . f f f f . . . . 
         . . f f e e e e f f . . 
@@ -708,7 +727,7 @@ function animSetup () {
         4 4 f 6 6 6 6 6 6 f 4 4 
         . . . f f f f f f . . . 
         . . . f f . . f f . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . 
         . . . f f f f f f . . . 
         . f f f e e e e f f f . 
@@ -725,7 +744,7 @@ function animSetup () {
         . . f 6 6 6 6 f e e . . 
         . . f f f f f f f . . . 
         . . f f f . . . . . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . 
         . . . f f f f f f . . . 
         . f f f e e e e f f f . 
@@ -760,7 +779,7 @@ function animSetup () {
         . . f 6 6 6 f e e f . . 
         . . . f f f f f f . . . 
         . . . . . f f f . . . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . 
         . . . f f f f f f . . . 
         . . f e e e e e f f f . 
@@ -777,7 +796,7 @@ function animSetup () {
         . f f 6 6 f e e f f f . 
         . f f f f f f f f f f . 
         . . f f f . . . f f . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . 
         . . . f f f f f f . . . 
         . . f e e e e e f f f . 
@@ -812,7 +831,7 @@ function animSetup () {
         . f e e f 6 6 6 6 f f . 
         . f f f f f f f f f f . 
         . . f f . . . f f f . . 
-        `,img`
+        `, img`
         . . . . . . . . . . . . 
         . . . f f f f f f . . . 
         . f f f e e e e e f . . 
@@ -829,7 +848,7 @@ function animSetup () {
         . f f f e e f 6 6 f f . 
         . f f f f f f f f f f . 
         . . f f . . . f f f . . 
-        `,img`
+        `, img`
         . . . . f f f f f . . . 
         . . f f e e e e e f . . 
         . f f e e e e e e e f . 
@@ -849,7 +868,8 @@ function animSetup () {
         `]
     ],
     [
-    [img`
+    [
+    img`
         . . . . . . f f f f . . . . . . 
         . . . . f f e e e e f f . . . . 
         . . . f e e e f f e e e f . . . 
@@ -866,7 +886,8 @@ function animSetup () {
         . . 4 4 f 4 4 4 4 4 4 f 4 4 . . 
         . . . . . f f f f f f . . . . . 
         . . . . . f f . . f f . . . . . 
-        `,img`
+        `,
+    img`
         . . . . . . . . . . . . . . . . 
         . . . . . . f f f f . . . . . . 
         . . . . f f e e e e f f . . . . 
@@ -883,7 +904,8 @@ function animSetup () {
         . . . 4 f 2 2 2 2 2 e d d 4 . . 
         . . . e f f f f f f e e 4 . . . 
         . . . . f f f . . . . . . . . . 
-        `,img`
+        `,
+    img`
         . . . . . . f f f f . . . . . . 
         . . . . f f e e e e f f . . . . 
         . . . f e e e f f e e e f . . . 
@@ -900,7 +922,8 @@ function animSetup () {
         . . 4 4 f 4 4 4 4 4 4 f 4 4 . . 
         . . . . . f f f f f f . . . . . 
         . . . . . f f . . f f . . . . . 
-        `,img`
+        `,
+    img`
         . . . . . . . . . . . . . . . . 
         . . . . . . f f f f . . . . . . 
         . . . . f f e e e e f f . . . . 
@@ -917,8 +940,10 @@ function animSetup () {
         . . 4 d d e 2 2 2 2 2 f 4 . . . 
         . . . 4 e e f f f f f f e . . . 
         . . . . . . . . . f f f . . . . 
-        `],
-    [img`
+        `
+    ],
+    [
+    img`
         . . . . . . f f f f . . . . . . 
         . . . . f f f 2 2 f f f . . . . 
         . . . f f f 2 2 2 2 f f f . . . 
@@ -935,7 +960,8 @@ function animSetup () {
         . . 4 4 f 4 4 5 5 4 4 f 4 4 . . 
         . . . . . f f f f f f . . . . . 
         . . . . . f f . . f f . . . . . 
-        `,img`
+        `,
+    img`
         . . . . . . . . . . . . . . . . 
         . . . . . . f f f f . . . . . . 
         . . . . f f f 2 2 f f f . . . . 
@@ -952,7 +978,8 @@ function animSetup () {
         . . . . f 4 4 5 5 f e e . . . . 
         . . . . f f f f f f f . . . . . 
         . . . . f f f . . . . . . . . . 
-        `,img`
+        `,
+    img`
         . . . . . . f f f f . . . . . . 
         . . . . f f f 2 2 f f f . . . . 
         . . . f f f 2 2 2 2 f f f . . . 
@@ -969,7 +996,8 @@ function animSetup () {
         . . 4 4 f 4 4 5 5 4 4 f 4 4 . . 
         . . . . . f f f f f f . . . . . 
         . . . . . f f . . f f . . . . . 
-        `,img`
+        `,
+    img`
         . . . . . . . . . . . . . . . . 
         . . . . . . f f f f . . . . . . 
         . . . . f f f 2 2 f f f . . . . 
@@ -986,8 +1014,10 @@ function animSetup () {
         . . . . e e f 5 5 4 4 f . . . . 
         . . . . . f f f f f f f . . . . 
         . . . . . . . . . f f f . . . . 
-        `],
-    [img`
+        `
+    ],
+    [
+    img`
         . . . . f f f f f f . . . . . . 
         . . . f 2 f e e e e f f . . . . 
         . . f 2 2 2 f e e e e f f . . . 
@@ -1004,7 +1034,8 @@ function animSetup () {
         . . . f 5 5 4 f e e f . . . . . 
         . . . . f f f f f f . . . . . . 
         . . . . . . f f f . . . . . . . 
-        `,img`
+        `,
+    img`
         . . . . . . . . . . . . . . . . 
         . . . . f f f f f f . . . . . . 
         . . . f 2 f e e e e f f . . . . 
@@ -1021,7 +1052,8 @@ function animSetup () {
         . . f f 5 5 f e e f f f . . . . 
         . . f f f f f f f f f f . . . . 
         . . . f f f . . . f f . . . . . 
-        `,img`
+        `,
+    img`
         . . . . f f f f f f . . . . . . 
         . . . f 2 f e e e e f f . . . . 
         . . f 2 2 2 f e e e e f f . . . 
@@ -1038,7 +1070,8 @@ function animSetup () {
         . . . f 5 5 4 f e e f . . . . . 
         . . . . f f f f f f . . . . . . 
         . . . . . . f f f . . . . . . . 
-        `,img`
+        `,
+    img`
         . . . . . . . . . . . . . . . . 
         . . . . f f f f f f . . . . . . 
         . . . f 2 f e e e e f f . . . . 
@@ -1055,8 +1088,10 @@ function animSetup () {
         . . f f 5 5 4 4 f e e f . . . . 
         . . f f f f f f f f f f . . . . 
         . . . f f f . . . f f . . . . . 
-        `],
-    [img`
+        `
+    ],
+    [
+    img`
         . . . . . . f f f f f f . . . . 
         . . . . f f e e e e f 2 f . . . 
         . . . f f e e e e f 2 2 2 f . . 
@@ -1073,7 +1108,8 @@ function animSetup () {
         . . . . . f e e f 4 5 5 f . . . 
         . . . . . . f f f f f f . . . . 
         . . . . . . . f f f . . . . . . 
-        `,img`
+        `,
+    img`
         . . . . . . . . . . . . . . . . 
         . . . . . . f f f f f f . . . . 
         . . . . f f e e e e f 2 f . . . 
@@ -1090,7 +1126,8 @@ function animSetup () {
         . . . . f f f e e f 5 5 f f . . 
         . . . . f f f f f f f f f f . . 
         . . . . . f f . . . f f f . . . 
-        `,img`
+        `,
+    img`
         . . . . . . f f f f f f . . . . 
         . . . . f f e e e e f 2 f . . . 
         . . . f f e e e e f 2 2 2 f . . 
@@ -1107,7 +1144,8 @@ function animSetup () {
         . . . . . f e e f 4 5 5 f . . . 
         . . . . . . f f f f f f . . . . 
         . . . . . . . f f f . . . . . . 
-        `,img`
+        `,
+    img`
         . . . . . . . . . . . . . . . . 
         . . . . . . f f f f f f . . . . 
         . . . . f f e e e e f 2 f . . . 
@@ -1124,10 +1162,43 @@ function animSetup () {
         . . . . f e e f 4 4 5 5 f f . . 
         . . . . f f f f f f f f f f . . 
         . . . . . f f . . . f f f . . . 
-        `]
+        `
+    ]
     ]
     ]
 }
+mp.onButtonEvent(mp.MultiplayerButton.Right, ControllerButtonEvent.Pressed, function (player2) {
+    if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
+        currentPlayer = 0
+    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
+        currentPlayer = 1
+        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirX", 1)
+        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirY", 0)
+    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
+        currentPlayer = 2
+    } else {
+        currentPlayer = 3
+        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)), "projDirX", 1)
+        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)), "projDirY", 0)
+    }
+    animationHandler(mp.getPlayerSprite(player2), true, currentPlayer, 3, animationSpeed)
+})
+mp.onButtonEvent(mp.MultiplayerButton.Up, ControllerButtonEvent.Pressed, function (player2) {
+    if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
+        currentPlayer = 0
+    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
+        currentPlayer = 1
+        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirX", 0)
+        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirY", -1)
+    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
+        currentPlayer = 2
+    } else {
+        currentPlayer = 3
+        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)), "projDirX", 0)
+        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)), "projDirY", -1)
+    }
+    animationHandler(mp.getPlayerSprite(player2), true, currentPlayer, 0, animationSpeed)
+})
 function setUpSprintBar () {
     sprintBar = statusbars.create(20, 4, StatusBarKind.stamina)
     sprintBar2 = statusbars.create(20, 4, StatusBarKind.stamina)
@@ -1141,20 +1212,38 @@ function setUpSprintBar () {
     sprintBar3.setColor(0, 0)
     sprintBar4.value = 100
     sprintBar4.setColor(0, 0)
-    speed = 50
+    speed = 10
     animationSpeed = 100
     speed2 = 50
     speed3 = 50
     speed4 = 50
 }
+mp.onButtonEvent(mp.MultiplayerButton.Left, ControllerButtonEvent.Pressed, function (player2) {
+    if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
+        currentPlayer = 0
+    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
+        currentPlayer = 1
+        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirX", -1)
+        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirY", 0)
+    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
+        currentPlayer = 2
+    } else {
+        currentPlayer = 3
+        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)), "projDirX", -1)
+        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)), "projDirY", 0)
+    }
+    animationHandler(mp.getPlayerSprite(player2), true, currentPlayer, 2, animationSpeed)
+})
 function animationHandler (animOn: Sprite, animate: boolean, playerNum: number, dir: number, animSpeed: number) {
     animation.stopAnimation(animation.AnimationTypes.MovementAnimation, animOn)
-    animation.runImageAnimation(
-    animOn,
-    animList[playerNum][dir],
-    animSpeed,
-    animate
-    )
+    if (animate) {
+        animation.runImageAnimation(
+        animOn,
+        animList[playerNum][dir],
+        animSpeed,
+        animate
+        )
+    }
 }
 function sprintfunction4 (sprite: Sprite) {
     if (sprintBar4.value > 0) {
@@ -1163,112 +1252,79 @@ function sprintfunction4 (sprite: Sprite) {
         statEffect4 = true
     }
 }
-function summonBoss () {
-    scoreSum = 0
-    scoresLoopCounter = 0
-    for (let playerArrayLoopA of mp.allPlayers()) {
-        playerScores[scoresLoopCounter] = mp.getPlayerState(playerArrayLoopA, MultiplayerState.score)
-        scoresLoopCounter += 1
+mp.onLifeZero(function (player2) {
+    sprites.destroy(mp.getPlayerSprite(player2), effects.rings, 1000)
+    music.play(music.melodyPlayable(music.wawawawaa), music.PlaybackMode.InBackground)
+})
+function spawnSpawners () {
+    for (let spawnerLocations of tiles.getTilesByType(assets.tile`spawnerGrassTile`)) {
+        setUpEnemySpawners(spawnerLocations.x, spawnerLocations.y, randint(3, 6))
     }
-    for (let scoresLoopB of playerScores) {
-        scoreSum += scoresLoopB
+}
+function distance (sprite1: Sprite, sprite2: Sprite) {
+    return Math.sqrt(Math.abs(sprite1.x - sprite2.x) ** 2 + Math.abs(sprite1.y - sprite2.y) ** 2)
+}
+function setUpPowerups (_type: number, posX: number, posY: number) {
+    if (_type == 0) {
+        itemSprite = sprites.create(assets.image`myImage2`, SpriteKind.Food)
+        sprites.setDataNumber(itemSprite, "healthUp", 1)
+    } else if (_type == 1) {
+        itemSprite = sprites.create(img`
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            `, SpriteKind.Food)
+        sprites.setDataNumber(itemSprite, "healthUp", 2)
+    } else {
+        itemSprite = sprites.create(assets.image`myImage3`, SpriteKind.Food)
+        sprites.setDataNumber(itemSprite, "healthUp", 3)
     }
-    if (scoreSum >= summonCondition) {
-        summonCondition = 1e+57
-        sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
-        sprites.destroyAllSpritesOfKind(SpriteKind.spawner)
-        scene.cameraShake(6, 5000)
-        pause(2000)
-        Florczak = sprites.create(assets.image`myImage3`, SpriteKind.Player)
-        Florczak.setPosition(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x - 100, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y)
-        game.splash("Broken one, soul so unruly...")
-        mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.One), 0, 0)
-        pause(2000)
-        animation.runImageAnimation(
-        mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)),
-        [img`
-            . . . . . f f f f f . . . 
-            . . . f f f f f f f f f . 
-            . . f f f c f f f f f f . 
-            . . f f c f f f c f f f f 
-            f f c c f f f c c f f c f 
-            f f f f f e f f f f c c f 
-            . f f f e e f f f f f f f 
-            . . f f e e f b f e e f f 
-            . . . f 4 4 f 1 e 4 e f . 
-            . . . f 4 4 4 4 e f f f . 
-            . . . f f e e e e e f . . 
-            . . . f 7 7 7 e 4 4 e . . 
-            . . . f 7 7 7 e 4 4 e . . 
-            . . . f 6 6 6 f e e f . . 
-            . . . . f f f f f f . . . 
-            . . . . . . f f f . . . . 
-            `],
-        500,
-        false
-        )
-        game.splash("To what lows hath thou spelunked?")
-        while (Florczak.x < mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x - 15) {
-            animation.runImageAnimation(
-            Florczak,
-            [img`
-                . . . . . . . . . . . . . 
-                . . . f f f f f f . . . . 
-                . f f f f f f f f f . . . 
-                . f f f f f f c f f f . . 
-                f f f f c f f f c f f f . 
-                f c f f c c f f f c c f f 
-                f c c f f f f c f f f f f 
-                f f f f f f f c c f f f . 
-                f f c c f 2 f c c f f f . 
-                f f c b c 4 f b b f f . . 
-                . f f f c b b b b f . . . 
-                . b b b c c c c f f . . . 
-                . c b b c 2 2 2 2 f . . . 
-                . f c c f 4 4 4 4 f f . . 
-                . f f f f f f f f f f . . 
-                . . f f . . . f f f . . . 
-                `,img`
-                . . . . . . . . . . . . . 
-                . . . f f f f f f . . . . 
-                . f f f f f f f f f . . . 
-                . f f f f f f c f f f . . 
-                f f f f c f f f c f f f . 
-                f c f f c c f f f c c f f 
-                f c c f f f f c f f f f f 
-                f f f f f f f c c f f f . 
-                f f c c f 2 f c c f f . . 
-                . f c b c 4 f b b f f . . 
-                . f f f c c b b b f . . . 
-                . . f c b b c c f f . . . 
-                . . f c b b c 2 2 f . . . 
-                . f f f c c f 4 4 f f . . 
-                . f f f f f f f f f f . . 
-                . . f f . . . f f f . . . 
-                `,img`
-                . . . f f f f f . . . . . 
-                . f f f f f f f f f . . . 
-                . f f f f f f c f f f . . 
-                f f f f c f f f c f f . . 
-                f c f f c c f f f c c f f 
-                f c c f f f f c f f f f f 
-                f f f f f f f c c f f f . 
-                f f c c f 2 f c c f f . . 
-                . f c b c 4 f b b f . . . 
-                . f f f c b b b b f . . . 
-                . . f c c c c c f f . . . 
-                . . c b b c 2 2 2 f . . . 
-                . . c b b c 2 2 2 f . . . 
-                . . f c c f 4 4 4 f . . . 
-                . . . f f f f f f . . . . 
-                . . . . f f f . . . . . . 
-                `],
-            200,
-            false
-            )
-            pause(100)
-            Florczak.x += 10
+    itemSprite.setPosition(posX, posY)
+}
+function sprintfunction3 (sprite: Sprite) {
+    if (sprintBar3.value > 0) {
+        sprintBar3.attachToSprite(sprite, 5, 0)
+        sprintBar3.setColor(4, 5)
+        statEffect3 = true
+    }
+}
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Food, function (sprite, otherSprite) {
+    sprites.destroy(otherSprite, effects.hearts, 200)
+    myObject += 1
+    mp.changePlayerStateBy(mp.getPlayerBySprite(sprite), MultiplayerState.life, sprites.readDataNumber(otherSprite, "healthUp"))
+    music.play(music.melodyPlayable(music.smallCrash), music.PlaybackMode.InBackground)
+})
+function setUpEnemySpawners (spawnerX: number, spawnerY: number, numOfEnemies: number) {
+    enemySpawnerSprite = sprites.create(assets.image`EnemyGrass4S`, SpriteKind.spawner)
+    enemySpawnerSprite.setPosition(spawnerX, spawnerY)
+    for (let index = 0; index < numOfEnemies; index++) {
+        sprites.setDataNumber(enemySpawnerSprite, "radius", randint(0, 25))
+        sprites.setDataNumber(enemySpawnerSprite, "angle", randint(0, 360))
+        sprites.setDataNumber(enemySpawnerSprite, "spawnEnemyType", randint(0, 2))
+        sprites.setDataNumber(enemySpawnerSprite, "spriteX", enemySpawnerSprite.x + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.cos(sprites.readDataNumber(enemySpawnerSprite, "angle")))
+        sprites.setDataNumber(enemySpawnerSprite, "spriteY", enemySpawnerSprite.y + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.sin(sprites.readDataNumber(enemySpawnerSprite, "angle")))
+        burnerSprite.setPosition(sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
+        while (tiles.tileAtLocationIsWall(tiles.getTileLocation(burnerSprite.tilemapLocation().column, burnerSprite.tilemapLocation().row))) {
+            sprites.setDataNumber(enemySpawnerSprite, "radius", randint(0, 25))
+            sprites.setDataNumber(enemySpawnerSprite, "angle", randint(0, 360))
+            sprites.setDataNumber(enemySpawnerSprite, "spriteX", enemySpawnerSprite.x + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.cos(sprites.readDataNumber(enemySpawnerSprite, "angle")))
+            sprites.setDataNumber(enemySpawnerSprite, "spriteY", enemySpawnerSprite.y + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.sin(sprites.readDataNumber(enemySpawnerSprite, "angle")))
+            burnerSprite.setPosition(sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
         }
+        setUpEnemy(sprites.readDataNumber(enemySpawnerSprite, "spawnEnemyType"), sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
     }
 }
 mp.onButtonEvent(mp.MultiplayerButton.Down, ControllerButtonEvent.Pressed, function (player2) {
@@ -1287,113 +1343,16 @@ mp.onButtonEvent(mp.MultiplayerButton.Down, ControllerButtonEvent.Pressed, funct
     }
     animationHandler(mp.getPlayerSprite(player2), true, currentPlayer, 1, animationSpeed)
 })
-function spawnSpawners () {
-    for (let spawnerLocations of tiles.getTilesByType(assets.tile`spawnerGrassTile`)) {
-        setUpEnemySpawners(spawnerLocations.x, spawnerLocations.y, randint(3, 6))
-    }
-}
-function distance (sprite1: Sprite, sprite2: Sprite) {
-    return Math.sqrt(Math.abs(sprite1.x - sprite2.x) ** 2 + Math.abs(sprite1.y - sprite2.y) ** 2)
-}
-mp.onButtonEvent(mp.MultiplayerButton.Left, ControllerButtonEvent.Pressed, function (player2) {
-    if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
-        currentPlayer = 0
-    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
-        currentPlayer = 1
-        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirX", -1)
-        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirY", 0)
-    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
-        currentPlayer = 2
-    } else {
-        currentPlayer = 3
-        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)), "projDirX", -1)
-        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)), "projDirY", 0)
-    }
-    animationHandler(mp.getPlayerSprite(player2), true, currentPlayer, 2, animationSpeed)
-})
-function sprintfunction3 (sprite: Sprite) {
-    if (sprintBar3.value > 0) {
-        sprintBar3.attachToSprite(sprite, 5, 0)
-        sprintBar3.setColor(4, 5)
-        statEffect3 = true
-    }
-}
-mp.onLifeZero(function (player2) {
-    sprites.destroy(mp.getPlayerSprite(player2), effects.rings, 1000)
-    music.play(music.melodyPlayable(music.wawawawaa), music.PlaybackMode.InBackground)
-})
-mp.onButtonEvent(mp.MultiplayerButton.Down, ControllerButtonEvent.Released, function (player2) {
-    if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
-        currentPlayer = 0
-    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
-        currentPlayer = 1
-    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
-        currentPlayer = 2
-    } else {
-        currentPlayer = 3
-    }
-    animationHandler(mp.getPlayerSprite(player2), false, currentPlayer, 1, animationSpeed)
-})
-function setUpEnemySpawners (spawnerX: number, spawnerY: number, numOfEnemies: number) {
-    enemySpawnerSprite = sprites.create(assets.image`EnemyGrass4S`, SpriteKind.spawner)
-    enemySpawnerSprite.setPosition(spawnerX, spawnerY)
-    sprites.setDataNumber(enemySpawnerSprite, "radius", randint(0, 25))
-    sprites.setDataNumber(enemySpawnerSprite, "angle", randint(0, 360))
-    sprites.setDataNumber(enemySpawnerSprite, "spawnEnemyType", randint(0, 2))
-    for (let index = 0; index < numOfEnemies; index++) {
-        sprites.setDataNumber(enemySpawnerSprite, "spriteX", enemySpawnerSprite.x + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.cos(sprites.readDataNumber(enemySpawnerSprite, "angle")))
-        sprites.setDataNumber(enemySpawnerSprite, "spriteY", enemySpawnerSprite.y + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.sin(sprites.readDataNumber(enemySpawnerSprite, "angle")))
-        burnerSprite.setPosition(sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
-        while (tiles.tileAtLocationIsWall(tiles.getTileLocation(burnerSprite.tilemapLocation().column, burnerSprite.tilemapLocation().row))) {
-            sprites.setDataNumber(enemySpawnerSprite, "spriteX", sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.cos(sprites.readDataNumber(enemySpawnerSprite, "angle")))
-            sprites.setDataNumber(enemySpawnerSprite, "spriteY", sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.asin(sprites.readDataNumber(enemySpawnerSprite, "angle")))
-            burnerSprite.setPosition(sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
-        }
-        setUpEnemy(sprites.readDataNumber(enemySpawnerSprite, "spawnEnemyType"), sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
-    }
-}
-mp.onButtonEvent(mp.MultiplayerButton.Up, ControllerButtonEvent.Pressed, function (player2) {
-    if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
-        currentPlayer = 0
-    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
-        currentPlayer = 1
-        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirX", 0)
-        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirY", -1)
-    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
-        currentPlayer = 2
-    } else {
-        currentPlayer = 3
-        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)), "projDirX", 0)
-        sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)), "projDirY", -1)
-    }
-    animationHandler(mp.getPlayerSprite(player2), true, currentPlayer, 0, animationSpeed)
-})
-mp.onControllerEvent(ControllerEvent.Connected, function (player2) {
-    music.play(music.melodyPlayable(music.baDing), music.PlaybackMode.InBackground)
-    playerArray = mp.allPlayers()
-    mp.setPlayerSprite(player2, playerSpriteList[spriteIndex])
-    spriteIndex += 1
-    mp.setPlayerState(player2, MultiplayerState.life, 3)
-    mp.setPlayerState(mp.playerSelector(mp.PlayerNumber.One), MultiplayerState.score, 0)
-    if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
-        mp.getPlayerSprite(player2).setPosition(250, 825)
-        scene.cameraFollowSprite(mp.getPlayerSprite(player2))
-    } else {
-        mp.getPlayerSprite(player2).setPosition(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y)
-        mp.getPlayerSprite(player2).setStayInScreen(true)
-    }
-    sprites.setDataBoolean(mp.getPlayerSprite(player2), "canAttk", true)
-    sprites.setDataNumber(mp.getPlayerSprite(player2), "projDirX", 1)
-    sprites.setDataNumber(mp.getPlayerSprite(player2), "projDirY", 1)
-    startFollow = true
+mp.onButtonEvent(mp.MultiplayerButton.B, ControllerButtonEvent.Pressed, function (player2) {
+    music.play(music.melodyPlayable(music.footstep), music.PlaybackMode.InBackground)
 })
 function initializeVariables () {
     startFollow = false
     playerFollow = 0
     enemyFollow = 0
-    spawnerLocations = 0
-    value = 0
-    enemiesArray = 0
+    spawnerLocations2 = 0
+    value2 = 0
+    enemiesArray2 = 0
     burnerSprite = sprites.create(img`
         . . . . . . . . . . . . . . . . 
         . . . . . . . . . . . . . . . . 
@@ -1543,6 +1502,18 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
     sprites.destroy(sprite)
     sprites.destroy(otherSprite, effects.trail, 100)
 })
+mp.onButtonEvent(mp.MultiplayerButton.Up, ControllerButtonEvent.Released, function (player2) {
+    if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
+        currentPlayer = 0
+    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
+        currentPlayer = 1
+    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
+        currentPlayer = 2
+    } else {
+        currentPlayer = 3
+    }
+    animationHandler(mp.getPlayerSprite(player2), false, currentPlayer, 0, animationSpeed)
+})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
     if (canHurtPlayers) {
         music.play(music.melodyPlayable(music.zapped), music.PlaybackMode.UntilDone)
@@ -1555,20 +1526,15 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
         })
     }
 })
-let enemiesArray = 0
-let value = 0
-let spawnerLocations = 0
+let enemiesArray2 = 0
+let value2 = 0
+let spawnerLocations2 = 0
 let enemyFollow = 0
 let playerFollow = 0
-let startFollow = false
-let spriteIndex = 0
-let playerArray: mp.Player[] = []
-let burnerSprite: Sprite = null
 let enemySpawnerSprite: Sprite = null
+let myObject = 0
 let statEffect3 = false
-let Florczak: Sprite = null
-let scoresLoopCounter = 0
-let scoreSum = 0
+let itemSprite: Sprite = null
 let statEffect4 = false
 let speed4 = 0
 let speed3 = 0
@@ -1579,21 +1545,24 @@ let sprintBar3: StatusBarSprite = null
 let animList: Image[][][] = []
 let statEffect = false
 let sprintBar: StatusBarSprite = null
-let playerSpriteList: Sprite[] = []
+let burnerSprite: Sprite = null
+let spawnerSprite: Sprite = null
 let statEffect2 = false
 let sprintBar2: StatusBarSprite = null
 let projectile: Sprite = null
-let summonCondition = 0
 let rangedCooldown = 0
 let meleeCooldown = 0
 let enemySight = 0
 let meleeHitRange = 0
 let projectileSpeedConst = 0
 let canHurtPlayers = false
+let startFollow = false
+let spriteIndex = 0
+let playerSpriteList: Sprite[] = []
+let playerArray: mp.Player[] = []
 let enemySprite: Sprite = null
 let animationSpeed = 0
 let currentPlayer = 0
-let playerScores: number[] = []
 initializeVariables()
 scene.centerCameraAt(250, 825)
 initializeSpritesList()
@@ -1605,15 +1574,22 @@ setUpCombatVars()
 animSetup()
 setUpSprintBar()
 spawnSpawners()
+spawnItemSpawners()
 music.play(music.stringPlayable("C D E F G A B C5 ", 120), music.PlaybackMode.UntilDone)
 game.splash("Town Game")
 music.play(music.stringPlayable("E B C5 A B G A F ", 120), music.PlaybackMode.LoopingInBackground)
-playerScores = [
-0,
-0,
-0,
-0
-]
+game.onUpdateInterval(5000, function () {
+    for (let enemyFollow2 of sprites.allOfKind(SpriteKind.Enemy)) {
+        for (let playerFollow2 of sprites.allOfKind(SpriteKind.Player)) {
+            if (distance(playerFollow2, enemyFollow2) < enemySight) {
+                enemyFollow2.follow(playerFollow2, sprites.readDataNumber(enemyFollow2, "speed"))
+                music.play(music.melodyPlayable(music.spooky), music.PlaybackMode.InBackground)
+            } else {
+                enemyFollow2.setVelocity(randint(-1 * sprites.readDataNumber(enemyFollow2, "speed"), sprites.readDataNumber(enemyFollow2, "speed")), randint(-1 * sprites.readDataNumber(enemyFollow2, "speed"), sprites.readDataNumber(enemyFollow2, "speed")))
+            }
+        }
+    }
+})
 forever(function () {
     mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.One), speed, speed)
     if (mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.One), mp.MultiplayerButton.B) && sprintBar.value > 0) {
@@ -1702,18 +1678,6 @@ forever(function () {
         if (statEffect4) {
             if (sprintBar4.value == 100) {
                 sprintBar4.setColor(3, 5)
-            }
-        }
-    }
-})
-game.onUpdateInterval(100, function () {
-    for (let enemyFollow of sprites.allOfKind(SpriteKind.Enemy)) {
-        for (let playerFollow of sprites.allOfKind(SpriteKind.Player)) {
-            if (distance(playerFollow, enemyFollow) < enemySight) {
-                enemyFollow.follow(playerFollow, sprites.readDataNumber(enemyFollow, "speed"))
-                music.play(music.melodyPlayable(music.spooky), music.PlaybackMode.InBackground)
-            } else {
-                enemyFollow.setVelocity(randint(-1 * sprites.readDataNumber(enemyFollow, "speed"), sprites.readDataNumber(enemyFollow, "speed")), randint(-1 * sprites.readDataNumber(enemyFollow, "speed"), sprites.readDataNumber(enemyFollow, "speed")))
             }
         }
     }
