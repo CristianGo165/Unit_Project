@@ -9,7 +9,8 @@
         "arcade-sprite-data": "github:microsoft/arcade-sprite-data#v0.2.1",
         "Timers": "github:microsoft/arcade-timers#v1.1.0",
         "radio-broadcast": "*",
-        "light": "*"
+        "light": "*",
+        "arcade-split-screen": "github:riknoll/arcade-split-screen#v0.0.3"
     },
     "files": [
         "main.blocks",

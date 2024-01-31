@@ -62,14 +62,33 @@ mp.onControllerEvent(ControllerEvent.Connected, function (player2) {
     mp.setPlayerState(mp.playerSelector(mp.PlayerNumber.One), MultiplayerState.score, 0)
     if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
         mp.getPlayerSprite(player2).setPosition(250, 825)
-        scene.cameraFollowSprite(mp.getPlayerSprite(player2))
     } else {
         mp.getPlayerSprite(player2).setPosition(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y)
-        mp.getPlayerSprite(player2).setStayInScreen(true)
     }
     sprites.setDataBoolean(mp.getPlayerSprite(player2), "canAttk", true)
     sprites.setDataNumber(mp.getPlayerSprite(player2), "projDirX", 1)
     sprites.setDataNumber(mp.getPlayerSprite(player2), "projDirY", 1)
+    if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
+        scene.cameraFollowSprite(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)))
+    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
+        scene.cameraFollowSprite(null)
+        splitScreen.setSplitScreenEnabled(true)
+        splitScreen.cameraFollowSprite(splitScreen.Camera.Camera1, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)))
+        splitScreen.cameraFollowSprite(splitScreen.Camera.Camera2, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)))
+        splitScreen.setCameraRegion(splitScreen.Camera.Camera1, splitScreen.CameraRegion.VerticalLeftHalf)
+        splitScreen.setCameraRegion(splitScreen.Camera.Camera2, splitScreen.CameraRegion.VerticalRightHalf)
+    } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
+        splitScreen.cameraFollowSprite(splitScreen.Camera.Camera3, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Three)))
+        splitScreen.setCameraRegion(splitScreen.Camera.Camera1, splitScreen.CameraRegion.TopLeft)
+        splitScreen.setCameraRegion(splitScreen.Camera.Camera2, splitScreen.CameraRegion.TopRight)
+        splitScreen.setCameraRegion(splitScreen.Camera.Camera3, splitScreen.CameraRegion.BottomLeft)
+    } else {
+        splitScreen.cameraFollowSprite(splitScreen.Camera.Camera4, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)))
+        splitScreen.setCameraRegion(splitScreen.Camera.Camera1, splitScreen.CameraRegion.TopLeft)
+        splitScreen.setCameraRegion(splitScreen.Camera.Camera2, splitScreen.CameraRegion.TopRight)
+        splitScreen.setCameraRegion(splitScreen.Camera.Camera3, splitScreen.CameraRegion.BottomLeft)
+        splitScreen.setCameraRegion(splitScreen.Camera.Camera4, splitScreen.CameraRegion.BottomRight)
+    }
     startFollow = true
 })
 function setUpCombatVars () {
@@ -79,6 +98,7 @@ function setUpCombatVars () {
     enemySight = 125
     meleeCooldown = 2500
     rangedCooldown = 1500
+    summonCondition = randint(100, 1000)
 }
 mp.onButtonEvent(mp.MultiplayerButton.A, ControllerButtonEvent.Pressed, function (player2) {
     if (player2 == mp.playerSelector(mp.PlayerNumber.Two) || player2 == mp.playerSelector(mp.PlayerNumber.Four)) {
@@ -107,6 +127,7 @@ mp.onButtonEvent(mp.MultiplayerButton.A, ControllerButtonEvent.Pressed, function
             timer.after(meleeCooldown, function () {
                 sprites.setDataBoolean(mp.getPlayerSprite(player2), "canAttk", true)
             })
+            summonBoss()
         }
     }
 })
@@ -1270,7 +1291,7 @@ function summonBoss () {
         scene.cameraShake(6, 5000)
         pause(2000)
         Florczak = sprites.create(assets.image`myImage3`, SpriteKind.Player)
-        Florczak.setPosition(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x - 100, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y)
+        Florczak.setPosition(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x - 75, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y)
         game.splash("Broken one, soul so unruly...")
         mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.One), 0, 0)
         pause(2000)
@@ -1297,8 +1318,8 @@ function summonBoss () {
         500,
         false
         )
-        game.splash("To what lows hath thou spelunked?")
-        while (Florczak.x < mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x - 15) {
+        game.showLongText("To what lows hath thou spelunked?", DialogLayout.Bottom)
+        while (Florczak.x < mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x - 30) {
             animation.runImageAnimation(
             Florczak,
             [img`
@@ -1353,12 +1374,45 @@ function summonBoss () {
                 . . . f f f f f f . . . . 
                 . . . . f f f . . . . . . 
                 `],
-            200,
+            50,
             false
             )
             pause(100)
             Florczak.x += 10
         }
+        game.showLongText("To cross over Joshua Grass...", DialogLayout.Bottom)
+        pause(200)
+        game.showLongText("To murder divine children...", DialogLayout.Bottom)
+        animation.runImageAnimation(
+        Florczak,
+        [img`
+            . . . . . f f f f f . . . 
+            . . . f f f f f f f f f . 
+            . . f f f c f f f f f f . 
+            . . f f c f f f c f f f f 
+            f f c c f f f c c f f c f 
+            f f f f f c f f f f c c f 
+            . f f f c c f f f f f f f 
+            . . f f c c f 2 f c c f f 
+            . . . f b b f 4 c b c f . 
+            . . . f b b b b c f f f . 
+            . . . f f c c c c c f . . 
+            . . . f 2 2 2 c b b c . . 
+            . . . f 2 2 2 c b b c . . 
+            . . . f 4 4 4 f c c f . . 
+            . . . . f f f f f f . . . 
+            . . . . . . f f f . . . . 
+            `],
+        100,
+        false
+        )
+        Florczak.setStayInScreen(true)
+        pause(200)
+        game.showLongText("After seeing such a soliloquy, I must raise my blade.", DialogLayout.Bottom)
+        pause(200)
+        game.showLongText("Traitorous fiend! Hopeless coward! Raise thy blade so that I may do better than the one who broke you!", DialogLayout.Bottom)
+        game.splash("THEY FIGHT!")
+        bossCanAttack = true
     }
 }
 mp.onLifeZero(function (player2) {
@@ -1635,6 +1689,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
         })
     }
 })
+let randomNum = 0
 let enemiesArray2 = 0
 let value2 = 0
 let spawnerLocations2 = 0
@@ -1644,8 +1699,8 @@ let enemySpawnerSprite: Sprite = null
 let myObject = 0
 let statEffect3 = false
 let itemSprite: Sprite = null
+let bossCanAttack = false
 let Florczak: Sprite = null
-let summonCondition = 0
 let scoresLoopCounter = 0
 let scoreSum = 0
 let statEffect4 = false
@@ -1663,6 +1718,7 @@ let spawnerSprite: Sprite = null
 let statEffect2 = false
 let sprintBar2: StatusBarSprite = null
 let projectile: Sprite = null
+let summonCondition = 0
 let rangedCooldown = 0
 let meleeCooldown = 0
 let enemySight = 0
@@ -1679,10 +1735,6 @@ let currentPlayer = 0
 initializeVariables()
 scene.centerCameraAt(250, 825)
 initializeSpritesList()
-namespace userconfig {
-    export const ARCADE_SCREEN_WIDTH = 320
-    export const ARCADE_SCREEN_HEIGHT = 240
-}
 setUpCombatVars()
 animSetup()
 setUpSprintBar()
@@ -1792,6 +1844,172 @@ forever(function () {
             if (sprintBar4.value == 100) {
                 sprintBar4.setColor(3, 5)
             }
+        }
+    }
+})
+game.onUpdateInterval(300, function () {
+    randomNum = randint(0, 2)
+    if (bossCanAttack) {
+        if (randomNum == 1) {
+            Florczak.setPosition(randint(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x + 50, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x - 50), randint(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y + 50, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y - 50))
+            animation.runImageAnimation(
+            Florczak,
+            [img`
+                . . . . f f f f . . . . . 
+                . . f f f f f f f f . . . 
+                . f f f f f f c f f f . . 
+                f f f f f f c c f f f c . 
+                f f f c f f f f f f f c . 
+                c c c f f f c c f f c c . 
+                f f f f f c c f f c c f . 
+                f f f 2 f c c f 2 f f f . 
+                . f b 4 f b b f 4 b f . . 
+                . f c b b b b b b c f . . 
+                . f f f c c c c f f f . . 
+                f c f a 2 2 2 2 a f c f . 
+                c b f 2 2 2 2 2 2 f b c . 
+                c c f 4 4 4 4 4 4 f c c . 
+                . . . f f f f f f . . . . 
+                . . . f f . . f f . . . . 
+                `,img`
+                . . . . . . . . . . . . . 
+                . . . . . f f f f . . . . 
+                . . . f f f f f f f f . . 
+                . . f f f f f f c f f f . 
+                f f f f f f f c c f f f c 
+                f f f f c f f f f f f f c 
+                . c c c f f f c c f f c c 
+                . f f f f f c c f f c c f 
+                . f f f 2 f c c f 2 f f f 
+                . f f b 4 f b b f 4 b f f 
+                . . f c b b b b b c c f c 
+                . f c f a 2 2 2 c b b b c 
+                . c b f 2 2 2 2 c b b c . 
+                . . . f b b b b b c c . . 
+                . . . f f f f f f f . . . 
+                . . . f f f . . . . . . . 
+                `,img`
+                . . . . . . . . . . . . . 
+                . . . . f f f f . . . . . 
+                . . f f f f f f f f . . . 
+                . f f f c f f f f f f . . 
+                c f f f c c f f f f f f f 
+                c f f f f f f f c f f f f 
+                c c f f c c f f f c c c . 
+                f c c f f c c f f f f f . 
+                f f f 2 f c c f 2 f f f . 
+                f f b 4 f b b f 4 b f f . 
+                c f c c b b b b b c f . . 
+                c b b b c 2 2 2 a f c f . 
+                . c b b c 2 2 2 2 f b c . 
+                . . c c 4 4 4 4 4 f . . . 
+                . . . f f f f f f f . . . 
+                . . . . . . . f f f . . . 
+                `],
+            100,
+            true
+            )
+        } else if (randomNum == 0) {
+            Florczak.setPosition(randint(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x + 50, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x - 50), randint(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y + 50, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y - 50))
+            animation.runImageAnimation(
+            Florczak,
+            [img`
+                . . . . . f f f f f . . . 
+                . . . f f f f f f f f f . 
+                . . f f f c f f f f f f . 
+                . . f f c f f f c f f f f 
+                f f c c f f f c c f f c f 
+                f f f f f c f f f f c c f 
+                . f f f c c f f f f f f f 
+                . . f f c c f 2 f c c f f 
+                . . . f b b f 4 c b c f . 
+                . . . f b b b b c f f f . 
+                . . . f f c c c c c f . . 
+                . . . f 2 2 2 c b b c . . 
+                . . . f 2 2 2 c b b c . . 
+                . . . f 4 4 4 f c c f . . 
+                . . . . f f f f f f . . . 
+                . . . . . . f f f . . . . 
+                `,img`
+                . . . . . . . . . . . . . 
+                . . . . f f f f f f . . . 
+                . . . f f f f f f f f f . 
+                . . f f f c f f f f f f . 
+                . f f f c f f f c f f f f 
+                f f c c f f f c c f f c f 
+                f f f f f c f f f f c c f 
+                . f f f c c f f f f f f f 
+                . . f f c c f 2 f c c f f 
+                . . f f b b f 4 c b c f . 
+                . . . f b b b c c f f f . 
+                . . . f f c c b b c f . . 
+                . . . f 2 2 c b b c f . . 
+                . . f f 4 4 f c c f f f . 
+                . . f f f f f f f f f f . 
+                . . . f f f . . . f f . . 
+                `,img`
+                . . . . . . . . . . . . . 
+                . . . . f f f f f f . . . 
+                . . . f f f f f f f f f . 
+                . . f f f c f f f f f f . 
+                . f f f c f f f c f f f f 
+                f f c c f f f c c f f c f 
+                f f f f f c f f f f c c f 
+                . f f f c c f f f f f f f 
+                . f f f c c f 2 f c c f f 
+                . . f f b b f 4 c b c f f 
+                . . . f b b b b c f f f . 
+                . . . f f c c c c b b b . 
+                . . . f 2 2 2 2 c b b c . 
+                . . f f 4 4 4 4 f c c f . 
+                . . f f f f f f f f f f . 
+                . . . f f f . . . f f . . 
+                `],
+            100,
+            true
+            )
+        } else {
+            Florczak.setPosition(randint(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x + 50, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x - 50), randint(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y + 50, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y - 50))
+            animation.runImageAnimation(
+            Florczak,
+            [img`
+                ..........ffff...........
+                ........ffffffff.........
+                .......ffffffcfff........
+                ......ffffffccfffc.......
+                ......fffcfffffffc.......
+                ......cccfffccffcc.......
+                ......fffffccffccf.......
+                ......fff2fccf2fff.......
+                .......fb4fbbf4bf........
+                .......fcbbbbbbcfccc.....
+                .......fffccccfffcbc.....
+                ......fcfa2222af.fcc.....
+                ......cbf222222f.........
+                ......ccf444444f.........
+                .........ffffff..........
+                .........ff..ff..........
+                `,img`
+                ..........ffff...........
+                ........ffffffff.........
+                .......ffffffcfff........
+                ......ffffffccfffc.......
+                ......fffcfffffffc.......
+                ......cccfffccffcc.......
+                ......fffffccffccf.......
+                ......fff2fccf2fff.......
+                .......fb4fbbf4bf........
+                ....cccfcbbbbbbcf........
+                ....cbcfffccccfff........
+                ....ccf.fa2222afcf.......
+                ........f222222fbc.......
+                ........f444444fcc.......
+                .........ffffff..........
+                .........ff..ff..........
+                `],
+            100,
+            true
+            )
         }
     }
 })
