@@ -20,6 +20,7 @@ mp.onButtonEvent(mp.MultiplayerButton.Right, ControllerButtonEvent.Released, fun
     }
     animationHandler(mp.getPlayerSprite(player2), false, currentPlayer, 3, animationSpeed)
 })
+// Sprites and Sprite animations are all by Makecode Arcade by Microsoft
 function setUpEnemy (_type: number, posX: number, posY: number) {
     if (_type == 0) {
         enemySprite = sprites.create(assets.image`myImage0`, SpriteKind.Enemy)
@@ -56,6 +57,7 @@ function spawnItemSpawners () {
         setUpPowerUpSpawners(itemSpawnerLocations.x, itemSpawnerLocations.y, randint(2, 4))
     }
 }
+// Multiplayer Extension by Microsoft Makecode Arcade
 mp.onControllerEvent(ControllerEvent.Connected, function (player2) {
     music.play(music.melodyPlayable(music.baDing), music.PlaybackMode.InBackground)
     playerArray = mp.allPlayers()
@@ -69,12 +71,14 @@ mp.onControllerEvent(ControllerEvent.Connected, function (player2) {
         mp.getPlayerSprite(player2).setPosition(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).x, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).y)
     }
     sprites.setDataBoolean(mp.getPlayerSprite(player2), "canAttk", true)
+    // Sprite Data Extension By Microsoft Makecode Arcade
     sprites.setDataNumber(mp.getPlayerSprite(player2), "projDirX", 1)
     sprites.setDataNumber(mp.getPlayerSprite(player2), "projDirY", 1)
     if (player2 == mp.playerSelector(mp.PlayerNumber.One)) {
         scene.cameraFollowSprite(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)))
     } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
         scene.cameraFollowSprite(null)
+        // Split Screen Extension by riknoll
         splitScreen.setSplitScreenEnabled(true)
         splitScreen.cameraFollowSprite(splitScreen.Camera.Camera1, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)))
         splitScreen.cameraFollowSprite(splitScreen.Camera.Camera2, mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)))
@@ -109,6 +113,8 @@ mp.onButtonEvent(mp.MultiplayerButton.A, ControllerButtonEvent.Pressed, function
             projectile = sprites.createProjectileFromSprite(assets.image`myImage1`, mp.getPlayerSprite(player2), sprites.readDataNumber(mp.getPlayerSprite(player2), "projDirX") * projectileSpeedConst, sprites.readDataNumber(mp.getPlayerSprite(player2), "projDirY") * projectileSpeedConst)
             music.play(music.melodyPlayable(music.pewPew), music.PlaybackMode.InBackground)
             sprites.setDataBoolean(mp.getPlayerSprite(player2), "canAttk", false)
+            // Timer Extension by Microsoft Makecode
+            // 
             timer.after(rangedCooldown, function () {
                 sprites.setDataBoolean(mp.getPlayerSprite(player2), "canAttk", true)
             })
@@ -133,6 +139,8 @@ mp.onButtonEvent(mp.MultiplayerButton.A, ControllerButtonEvent.Pressed, function
                 }
             }
             sprites.setDataBoolean(mp.getPlayerSprite(player2), "canAttk", false)
+            // Timer Extension by Microsoft Makecode
+            // 
             timer.after(meleeCooldown, function () {
                 sprites.setDataBoolean(mp.getPlayerSprite(player2), "canAttk", true)
             })
@@ -157,6 +165,7 @@ function setUpPowerUpSpawners (spawnerX: number, spawnerY: number, numOfPowerups
         sprites.setDataNumber(spawnerSprite, "spriteX", spawnerSprite.x + sprites.readDataNumber(spawnerSprite, "radius") * Math.cos(sprites.readDataNumber(spawnerSprite, "angle")))
         sprites.setDataNumber(spawnerSprite, "spriteY", spawnerSprite.y + sprites.readDataNumber(spawnerSprite, "radius") * Math.sin(sprites.readDataNumber(spawnerSprite, "angle")))
         burnerSprite.setPosition(sprites.readDataNumber(spawnerSprite, "spriteX"), sprites.readDataNumber(spawnerSprite, "spriteY"))
+        // Tilemaps are by Microsoft makecode ARcade
         while (tiles.tileAtLocationIsWall(tiles.getTileLocation(burnerSprite.tilemapLocation().column, burnerSprite.tilemapLocation().row))) {
             sprites.setDataNumber(spawnerSprite, "radius", randint(25, 50))
             sprites.setDataNumber(spawnerSprite, "angle", randint(0, 360))
@@ -266,6 +275,7 @@ function sprintfunction (sprite: Sprite) {
     }
 }
 function animSetup () {
+    // Sprites and Sprite animations are all by Makecode Arcade by Microsoft
     animList = [
     [
     [img`
@@ -1202,6 +1212,7 @@ mp.onButtonEvent(mp.MultiplayerButton.Right, ControllerButtonEvent.Pressed, func
         currentPlayer = 0
     } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
         currentPlayer = 1
+        // Sprite Data Extension by Microsoft Makecode
         sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirX", 1)
         sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirY", 0)
     } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
@@ -1218,6 +1229,7 @@ mp.onButtonEvent(mp.MultiplayerButton.Up, ControllerButtonEvent.Pressed, functio
         currentPlayer = 0
     } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
         currentPlayer = 1
+        // Sprite Data Extension by Microsoft Makecode
         sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirX", 0)
         sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirY", -1)
     } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
@@ -1253,6 +1265,7 @@ mp.onButtonEvent(mp.MultiplayerButton.Left, ControllerButtonEvent.Pressed, funct
         currentPlayer = 0
     } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
         currentPlayer = 1
+        // Sprite Data Extension by Microsoft Makecode
         sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirX", -1)
         sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirY", 0)
     } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
@@ -1270,6 +1283,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Projectile, function (sprite, ot
 function animationHandler (animOn: Sprite, animate: boolean, playerNum: number, dir: number, animSpeed: number) {
     animation.stopAnimation(animation.AnimationTypes.MovementAnimation, animOn)
     if (animate) {
+        // animation extension by Microsoft Makecode Arcade
         animation.runImageAnimation(
         animOn,
         animList[playerNum][dir],
@@ -1495,18 +1509,16 @@ function setUpEnemySpawners (spawnerX: number, spawnerY: number, numOfEnemies: n
     enemySpawnerSprite = sprites.create(assets.image`EnemyGrass4S`, SpriteKind.spawner)
     enemySpawnerSprite.setPosition(spawnerX, spawnerY)
     for (let index = 0; index < numOfEnemies; index++) {
-        sprites.setDataNumber(enemySpawnerSprite, "radius", randint(0, 25))
-        sprites.setDataNumber(enemySpawnerSprite, "angle", randint(0, 360))
-        sprites.setDataNumber(enemySpawnerSprite, "spawnEnemyType", randint(0, 2))
-        sprites.setDataNumber(enemySpawnerSprite, "spriteX", enemySpawnerSprite.x + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.cos(sprites.readDataNumber(enemySpawnerSprite, "angle")))
-        sprites.setDataNumber(enemySpawnerSprite, "spriteY", enemySpawnerSprite.y + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.sin(sprites.readDataNumber(enemySpawnerSprite, "angle")))
-        burnerSprite.setPosition(sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
-        while (tiles.tileAtLocationIsWall(tiles.getTileLocation(burnerSprite.tilemapLocation().column, burnerSprite.tilemapLocation().row))) {
+        while (true) {
+            sprites.setDataNumber(enemySpawnerSprite, "spawnEnemyType", randint(0, 2))
             sprites.setDataNumber(enemySpawnerSprite, "radius", randint(0, 25))
             sprites.setDataNumber(enemySpawnerSprite, "angle", randint(0, 360))
             sprites.setDataNumber(enemySpawnerSprite, "spriteX", enemySpawnerSprite.x + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.cos(sprites.readDataNumber(enemySpawnerSprite, "angle")))
             sprites.setDataNumber(enemySpawnerSprite, "spriteY", enemySpawnerSprite.y + sprites.readDataNumber(enemySpawnerSprite, "radius") * Math.sin(sprites.readDataNumber(enemySpawnerSprite, "angle")))
             burnerSprite.setPosition(sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
+            if (!(tiles.tileAtLocationIsWall(tiles.getTileLocation(burnerSprite.tilemapLocation().column, burnerSprite.tilemapLocation().row)))) {
+                break;
+            }
         }
         setUpEnemy(sprites.readDataNumber(enemySpawnerSprite, "spawnEnemyType"), sprites.readDataNumber(enemySpawnerSprite, "spriteX"), sprites.readDataNumber(enemySpawnerSprite, "spriteY"))
     }
@@ -1516,6 +1528,7 @@ mp.onButtonEvent(mp.MultiplayerButton.Down, ControllerButtonEvent.Pressed, funct
         currentPlayer = 0
     } else if (player2 == mp.playerSelector(mp.PlayerNumber.Two)) {
         currentPlayer = 1
+        // Sprite Data Extension by Microsoft Makecode
         sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirX", 0)
         sprites.setDataNumber(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)), "projDirY", 1)
     } else if (player2 == mp.playerSelector(mp.PlayerNumber.Three)) {
@@ -1705,6 +1718,8 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
         mp.changePlayerStateBy(mp.getPlayerBySprite(sprite), MultiplayerState.life, -1)
         canHurtPlayers = false
         sprite.startEffect(effects.spray, 100)
+        // Timer Extension by Microsoft Makecode
+        // 
         timer.after(5000, function () {
             canHurtPlayers = true
         })
@@ -1775,8 +1790,10 @@ music.play(music.stringPlayable("C D E F G A B C5 ", 120), music.PlaybackMode.Un
 game.splash("Town Game")
 music.play(music.stringPlayable("E B C5 A B G A F ", 120), music.PlaybackMode.LoopingInBackground)
 statusbar = statusbars.create(20, 4, StatusBarKind.Health)
+// Status Bar Extension by Microsoft Makecode Arcade
 statusbar.value = 100
 statusbar.setColor(0, 0)
+// On Game update is by Microsoft makecode Arcade
 game.onUpdateInterval(5000, function () {
     for (let enemyFollow2 of sprites.allOfKind(SpriteKind.Enemy)) {
         for (let playerFollow2 of sprites.allOfKind(SpriteKind.Player)) {
@@ -1794,6 +1811,7 @@ forever(function () {
     if (mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.One), mp.MultiplayerButton.B) && sprintBar.value > 0) {
         sprintfunction(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)))
         pause(100)
+        // Status Bar Extension by Microsoft Makecode Arcade
         sprintBar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
         sprintBar.value += -5
         speed += 10
@@ -1817,6 +1835,7 @@ forever(function () {
     if (mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.Three), mp.MultiplayerButton.B) && sprintBar3.value > 0) {
         sprintfunction3(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Three)))
         pause(100)
+        // Status Bar Extension by Microsoft Makecode Arcade
         sprintBar3.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
         sprintBar3.value += -5
         speed3 += 10
@@ -1840,6 +1859,7 @@ forever(function () {
     if (mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.Two), mp.MultiplayerButton.B) && sprintBar2.value > 0) {
         sprintfunction2(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)))
         pause(100)
+        // Status Bar Extension by Microsoft Makecode Arcade
         sprintBar2.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
         sprintBar2.value += -5
         speed2 += 10
@@ -1863,6 +1883,7 @@ forever(function () {
     if (mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.Four), mp.MultiplayerButton.B) && sprintBar4.value > 0) {
         sprintfunction4(mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Four)))
         pause(100)
+        // Status Bar Extension by Microsoft Makecode Arcade
         sprintBar4.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
         sprintBar4.value += -5
         speed4 += 10
