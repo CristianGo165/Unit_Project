@@ -100,7 +100,7 @@ mp.onControllerEvent(ControllerEvent.Connected, function (player2) {
 })
 function setUpCombatVars () {
     canHurtPlayers = true
-    projectileSpeedConst = 150
+    projectileSpeedConst = 5
     meleeHitRange = 37.5
     enemySight = 125
     meleeCooldown = 2500
@@ -111,6 +111,7 @@ mp.onButtonEvent(mp.MultiplayerButton.A, ControllerButtonEvent.Pressed, function
     if (player2 == mp.playerSelector(mp.PlayerNumber.Two) || player2 == mp.playerSelector(mp.PlayerNumber.Four)) {
         if (sprites.readDataBoolean(mp.getPlayerSprite(player2), "canAttk")) {
             projectile = sprites.createProjectileFromSprite(assets.image`myImage1`, mp.getPlayerSprite(player2), sprites.readDataNumber(mp.getPlayerSprite(player2), "projDirX") * projectileSpeedConst, sprites.readDataNumber(mp.getPlayerSprite(player2), "projDirY") * projectileSpeedConst)
+            projectile.setFlag(SpriteFlag.AutoDestroy, false)
             music.play(music.melodyPlayable(music.pewPew), music.PlaybackMode.InBackground)
             sprites.setDataBoolean(mp.getPlayerSprite(player2), "canAttk", false)
             // Timer Extension by Microsoft Makecode
